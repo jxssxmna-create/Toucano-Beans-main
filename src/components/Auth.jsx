@@ -1,19 +1,41 @@
 import { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import {
+  validateEmail,
+  validateFullName,
+  validatePassword,
+  validatePhone,
+  normalizePhone,
+  getAuthErrorMessage,
+} from '../lib/authHelpers';
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
-  const [method, setMethod] = useState('email'); // 'email' or 'phone'
+  const [method, setMethod] = useState('email');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState(''); // e.g., +97412345678
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
+  function validateForm() {
+    if (isSignUp) {
+      const nameErr = validateFullName(fullName);
+      if (nameErr) return nameErr;
+    }
+    if (method === 'email') {
+      const emailErr = validateEmail(email);
+      if (emailErr) return emailErr;
+    } else {
+      const phoneErr = validatePhone(phone);
+      if (phoneErr) return phoneErr;
+    }
+    return validatePassword(password);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
     setMessage(null);
 
     if (!isSupabaseConfigured) {
@@ -21,13 +43,19 @@ export default function Auth() {
         type: 'error',
         text: 'Authentication is unavailable. Supabase environment variables are not configured.',
       });
-      setLoading(false);
       return;
     }
 
+    const validationError = validateForm();
+    if (validationError) {
+      setMessage({ type: 'error', text: validationError });
+      return;
+    }
+
+    setLoading(true);
+
     try {
       if (isSignUp) {
-        // --- SIGN UP LOGIC ---
         let response;
         if (method === 'email') {
           response = await supabase.auth.signUp({
@@ -38,11 +66,15 @@ export default function Auth() {
             },
           });
         } else {
+          const normalized = normalizePhone(phone);
           response = await supabase.auth.signUp({
-            phone: phone.trim(),
+            phone: normalized,
             password,
             options: {
-              data: { full_name: fullName.trim() },
+              data: {
+                full_name: fullName.trim(),
+                phone_number: normalized,
+              },
               channel: 'whatsapp',
             },
           });
@@ -51,30 +83,33 @@ export default function Auth() {
         if (response.error) throw response.error;
 
         if (response.data?.session) {
-          setMessage({ type: 'success', text: 'Account created successfully! Welcome.' });
-          window.location.reload(); // Refresh to load session state across app
+          setMessage({ type: 'success', text: 'Account created successfully. Welcome!' });
         } else {
           setMessage({
             type: 'success',
-            text: 'Account created! Please check your Email/WhatsApp if verification is required.',
+            text: 'Account created. Please check your Email/WhatsApp if verification is required.',
           });
+          setPassword('');
         }
       } else {
-        // --- LOG IN LOGIC ---
         let response;
         if (method === 'email') {
-          response = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+          response = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          });
         } else {
-          response = await supabase.auth.signInWithPassword({ phone: phone.trim(), password });
+          response = await supabase.auth.signInWithPassword({
+            phone: normalizePhone(phone),
+            password,
+          });
         }
 
         if (response.error) throw response.error;
-
-        setMessage({ type: 'success', text: 'Logged in successfully!' });
-        window.location.reload();
+        setMessage({ type: 'success', text: 'Logged in successfully.' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: error.message });
+      setMessage({ type: 'error', text: getAuthErrorMessage(error) });
     } finally {
       setLoading(false);
     }
@@ -97,7 +132,6 @@ export default function Auth() {
         {isSignUp ? 'Create Account' : 'Welcome Back'}
       </h2>
 
-      {/* Mode Switcher: Sign Up vs Log In */}
       <div
         style={{
           display: 'flex',
@@ -144,7 +178,6 @@ export default function Auth() {
         </button>
       </div>
 
-      {/* Method Switcher: Email vs WhatsApp/Phone */}
       <div
         style={{
           display: 'flex',
@@ -174,9 +207,9 @@ export default function Auth() {
         </label>
       </div>
 
-      {/* Feedback Alert Message */}
       {message && (
         <div
+          role={message.type === 'error' ? 'alert' : 'status'}
           style={{
             padding: '10px',
             borderRadius: '6px',
@@ -190,8 +223,7 @@ export default function Auth() {
         </div>
       )}
 
-      {/* Auth Form */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {isSignUp && (
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' }}>
@@ -202,7 +234,9 @@ export default function Auth() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="John Doe"
+              autoComplete="name"
               required={isSignUp}
+              disabled={loading}
               style={{
                 width: '100%',
                 padding: '10px',
@@ -224,7 +258,9 @@ export default function Auth() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"
+              autoComplete="email"
               required
+              disabled={loading}
               style={{
                 width: '100%',
                 padding: '10px',
@@ -244,7 +280,9 @@ export default function Auth() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+97412345678"
+              autoComplete="tel"
               required
+              disabled={loading}
               style={{
                 width: '100%',
                 padding: '10px',
@@ -265,8 +303,10 @@ export default function Auth() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
+            autoComplete={isSignUp ? 'new-password' : 'current-password'}
             required
             minLength={6}
+            disabled={loading}
             style={{
               width: '100%',
               padding: '10px',

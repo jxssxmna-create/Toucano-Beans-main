@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import {
+  validateEmail,
+  validateFullName,
+  validatePassword,
+  getAuthErrorMessage,
+} from '../lib/authHelpers';
 
 export default function SignUp() {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -8,46 +14,77 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Handles sign-up and sign-in authentication via Supabase
+  function resetFeedback() {
+    setErrorMessage('');
+    setSuccessMessage('');
+  }
+
+  function validateForm() {
+    if (isSignUp) {
+      const nameErr = validateFullName(fullName);
+      if (nameErr) return nameErr;
+    }
+    const emailErr = validateEmail(email);
+    if (emailErr) return emailErr;
+    const passwordErr = validatePassword(password);
+    if (passwordErr) return passwordErr;
+    return null;
+  }
+
   async function handleAuth(e) {
     e.preventDefault();
-    setAuthLoading(true);
-    setErrorMessage('');
+    resetFeedback();
 
     if (!isSupabaseConfigured) {
-      setErrorMessage('Authentication is unavailable. Supabase environment variables are not configured.');
-      setAuthLoading(false);
+      setErrorMessage('Authentication is unavailable. Supabase is not configured.');
       return;
     }
 
+    const validationError = validateForm();
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
+
+    setAuthLoading(true);
+
     try {
+      const trimmedEmail = email.trim();
+
       if (isSignUp) {
-        // 1. Create a new user account
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password: password,
+          email: trimmedEmail,
+          password,
           options: {
             data: {
-              full_name: fullName,
+              full_name: fullName.trim(),
             },
           },
         });
 
         if (error) throw error;
-        alert('Account created successfully!');
+
+        if (data.session) {
+          setSuccessMessage('Account created. Welcome!');
+        } else {
+          setSuccessMessage(
+            'Account created. Check your email to confirm your address before signing in.'
+          );
+          setPassword('');
+        }
       } else {
-        // 2. Sign in existing user
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password: password,
+        const { error } = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
         });
 
         if (error) throw error;
-        alert('Signed in successfully!');
+        setSuccessMessage('Signed in successfully.');
       }
     } catch (err) {
-      setErrorMessage(err.message);
+      setErrorMessage(getAuthErrorMessage(err));
     } finally {
       setAuthLoading(false);
     }
@@ -63,15 +100,16 @@ export default function SignUp() {
         borderRadius: '12px',
         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
         fontFamily: 'sans-serif',
+        backgroundColor: '#fff',
       }}
     >
       <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#1e293b' }}>
         {isSignUp ? 'Create New Account' : 'Sign In'}
       </h2>
 
-      {/* Error Message Alert */}
       {errorMessage && (
         <div
+          role="alert"
           style={{
             padding: '10px',
             backgroundColor: '#fee2e2',
@@ -86,8 +124,24 @@ export default function SignUp() {
         </div>
       )}
 
-      <form onSubmit={handleAuth}>
-        {/* Full Name field - displayed only during Sign Up */}
+      {successMessage && (
+        <div
+          role="status"
+          style={{
+            padding: '10px',
+            backgroundColor: '#dcfce7',
+            color: '#166534',
+            borderRadius: '6px',
+            marginBottom: '15px',
+            fontSize: '14px',
+            textAlign: 'center',
+          }}
+        >
+          {successMessage}
+        </div>
+      )}
+
+      <form onSubmit={handleAuth} noValidate>
         {isSignUp && (
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>
@@ -98,7 +152,9 @@ export default function SignUp() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="John Doe"
+              autoComplete="name"
               required={isSignUp}
+              disabled={authLoading}
               style={{
                 width: '100%',
                 padding: '10px',
@@ -119,7 +175,9 @@ export default function SignUp() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="example@domain.com"
+            autoComplete="email"
             required
+            disabled={authLoading}
             style={{
               width: '100%',
               padding: '10px',
@@ -139,8 +197,10 @@ export default function SignUp() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
+            autoComplete={isSignUp ? 'new-password' : 'current-password'}
             minLength={6}
             required
+            disabled={authLoading}
             style={{
               width: '100%',
               padding: '10px',
@@ -157,7 +217,7 @@ export default function SignUp() {
           style={{
             width: '100%',
             padding: '12px',
-            backgroundColor: '#2563eb',
+            backgroundColor: '#c84b1d',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',
@@ -170,17 +230,16 @@ export default function SignUp() {
         </button>
       </form>
 
-      {/* Switch between Sign Up and Sign In */}
       <button
         type="button"
         onClick={() => {
           setIsSignUp(!isSignUp);
-          setErrorMessage('');
+          resetFeedback();
         }}
         style={{
           background: 'none',
           border: 'none',
-          color: '#2563eb',
+          color: '#c84b1d',
           marginTop: '16px',
           cursor: 'pointer',
           width: '100%',

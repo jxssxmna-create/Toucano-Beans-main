@@ -6,6 +6,8 @@ export default function RoleRouter({ session, AdminView, DeliveryView, CustomerV
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchRole() {
       if (!session?.user) {
         setLoading(false);
@@ -14,8 +16,10 @@ export default function RoleRouter({ session, AdminView, DeliveryView, CustomerV
 
       if (!isSupabaseConfigured) {
         console.warn('[Toucano Beans] Role lookup skipped — Supabase is not configured.');
-        setRole('buyer');
-        setLoading(false);
+        if (!cancelled) {
+          setRole('buyer');
+          setLoading(false);
+        }
         return;
       }
 
@@ -24,22 +28,25 @@ export default function RoleRouter({ session, AdminView, DeliveryView, CustomerV
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching user role:', error.message);
         }
 
-        setRole(data?.role || 'buyer');
+        if (!cancelled) setRole(data?.role || 'buyer');
       } catch (err) {
         console.error('Unexpected error fetching role:', err);
-        setRole('buyer');
+        if (!cancelled) setRole('buyer');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     fetchRole();
+    return () => {
+      cancelled = true;
+    };
   }, [session]);
 
   if (loading) return <div>Loading dashboard...</div>;

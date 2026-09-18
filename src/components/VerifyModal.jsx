@@ -1,28 +1,46 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { getAuthErrorMessage } from '../lib/authHelpers';
 
 export default function VerifyModal({ user, onVerified, onClose }) {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const isPhone = !!user?.phone;
   const target = user?.phone || user?.email;
 
   async function handleVerify(e) {
     e.preventDefault();
+    setError('');
+
+    if (!isSupabaseConfigured) {
+      setError('Verification unavailable — Supabase is not configured.');
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp.trim())) {
+      setError('Enter the 6-digit verification code.');
+      return;
+    }
+
+    if (!target) {
+      setError('No email or phone available to verify.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      const { error: verifyError } = await supabase.auth.verifyOtp({
         [isPhone ? 'phone' : 'email']: target,
         token: otp.trim(),
         type: isPhone ? 'sms' : 'signup',
       });
 
-      if (error) throw error;
-      alert('Verification successful!');
-      onVerified(); // Triggers checkout completion
+      if (verifyError) throw verifyError;
+      onVerified();
     } catch (err) {
-      alert('Verification failed: ' + err.message);
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -46,17 +64,36 @@ export default function VerifyModal({ user, onVerified, onClose }) {
       <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', width: '350px', color: '#000' }}>
         <h3 style={{ marginTop: 0 }}>Account Verification Required</h3>
         <p>
-          A 6-digit verification code was sent to <strong>{target}</strong> via {isPhone ? 'WhatsApp' : 'Email'}.
+          A 6-digit verification code was sent to <strong>{target || 'your account'}</strong> via{' '}
+          {isPhone ? 'WhatsApp' : 'Email'}.
         </p>
 
-        <form onSubmit={handleVerify}>
+        {error && (
+          <div
+            role="alert"
+            style={{
+              padding: '8px',
+              marginBottom: '10px',
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              borderRadius: '4px',
+              fontSize: '13px',
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleVerify} noValidate>
           <input
             type="text"
+            inputMode="numeric"
             placeholder="Enter 6-digit OTP"
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
             required
             maxLength={6}
+            disabled={loading}
             style={{
               width: '100%',
               padding: '10px',
@@ -85,6 +122,7 @@ export default function VerifyModal({ user, onVerified, onClose }) {
             <button
               type="button"
               onClick={onClose}
+              disabled={loading}
               style={{
                 padding: '10px 15px',
                 backgroundColor: '#e5e7eb',

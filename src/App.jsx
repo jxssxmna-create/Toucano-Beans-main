@@ -60,18 +60,23 @@ export default function App() {
   const t = translations[lang];
 
   useEffect(() => {
+    let mounted = true;
     let subscription = null;
 
     async function initAuth() {
       if (!isSupabaseConfigured) {
         console.warn('[Toucano Beans] Auth disabled — Supabase is not configured.');
-        setSession(null);
-        setLoading(false);
+        if (mounted) {
+          setSession(null);
+          setLoading(false);
+        }
         return;
       }
 
       try {
         const { data, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+
         if (error) {
           console.error('[Toucano Beans] getSession failed:', error.message);
           setSession(null);
@@ -80,13 +85,13 @@ export default function App() {
         }
       } catch (err) {
         console.error('[Toucano Beans] Unexpected auth init error:', err);
-        setSession(null);
+        if (mounted) setSession(null);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
 
       const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-        setSession(nextSession);
+        if (mounted) setSession(nextSession);
       });
       subscription = authListener.subscription;
     }
@@ -94,6 +99,7 @@ export default function App() {
     initAuth();
 
     return () => {
+      mounted = false;
       subscription?.unsubscribe();
     };
   }, []);
@@ -115,8 +121,15 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigateTo('home');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) console.error('[Toucano Beans] signOut failed:', error.message);
+    } catch (err) {
+      console.error('[Toucano Beans] Unexpected signOut error:', err);
+    } finally {
+      setSession(null);
+      navigateTo('home');
+    }
   };
 
   if (loading) {
