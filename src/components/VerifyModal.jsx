@@ -38,7 +38,7 @@ export default function VerifyModal({ user, onVerified, onClose }) {
         bottom: 0,
         background: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
-        justify: 'center',
+        justifyContent: 'center',
         alignItems: 'center',
         zIndex: 1000,
       }}

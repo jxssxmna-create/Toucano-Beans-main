@@ -1,32 +1,29 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import VerifyModal from '../components/VerifyModal';
 
 export default function Checkout({ user }) {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Check whether the user's email or phone number is verified
+  // Guests can still place a demo order; verified accounts skip the OTP modal
   const isVerified = Boolean(user?.email_confirmed_at || user?.phone_confirmed_at);
 
   async function handlePlaceOrder() {
-    if (!isVerified) {
-      // Show verification modal if account is not activated
+    if (user && !isVerified) {
       setShowVerifyModal(true);
       return;
     }
 
-    // Account verified -> complete order directly
     await completeOrder();
   }
 
   async function completeOrder() {
     setLoading(true);
     try {
-      // Add Supabase database order insertion logic here
+      // Order persistence can be wired to Supabase when the orders table is ready
       alert('Order placed successfully! Delivery details sent to driver.');
     } catch (error) {
-      console.error('Error placing order:', error.message);
+      console.error('Error placing order:', error?.message || error);
       alert('Failed to place order. Please try again.');
     } finally {
       setLoading(false);

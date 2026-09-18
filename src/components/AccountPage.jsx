@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 export default function AccountPage({ session }) {
   const [loading, setLoading] = useState(true);
@@ -25,6 +25,12 @@ export default function AccountPage({ session }) {
   async function getProfile() {
     try {
       setLoading(true);
+
+      if (!isSupabaseConfigured) {
+        setProfile((prev) => ({ ...prev, email: session.user.email }));
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -39,6 +45,7 @@ export default function AccountPage({ session }) {
       }
     } catch (err) {
       console.error('Error fetching profile:', err.message);
+      setProfile((prev) => ({ ...prev, email: session?.user?.email || prev.email }));
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -15,6 +15,15 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
+
+    if (!isSupabaseConfigured) {
+      setMessage({
+        type: 'error',
+        text: 'Authentication is unavailable. Supabase environment variables are not configured.',
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       if (isSignUp) {
@@ -92,7 +101,7 @@ export default function Auth() {
       <div
         style={{
           display: 'flex',
-          justify: 'center',
+          justifyContent: 'center',
           gap: '10px',
           marginBottom: '20px',
         }}
@@ -139,7 +148,7 @@ export default function Auth() {
       <div
         style={{
           display: 'flex',
-          justify: 'center',
+          justifyContent: 'center',
           gap: '15px',
           marginBottom: '20px',
           fontSize: '14px',

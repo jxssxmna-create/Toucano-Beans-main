@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import AccountPage from './components/AccountPage';
 import SignUp from './pages/SignUp';
 import Checkout from './pages/Checkout';
@@ -60,18 +60,42 @@ export default function App() {
   const t = translations[lang];
 
   useEffect(() => {
-    // 1. Fetch current session on initial load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    let subscription = null;
 
-    // 2. Listen for auth changes (Sign In / Sign Out)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    async function initAuth() {
+      if (!isSupabaseConfigured) {
+        console.warn('[Toucano Beans] Auth disabled — Supabase is not configured.');
+        setSession(null);
+        setLoading(false);
+        return;
+      }
 
-    return () => subscription.unsubscribe();
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('[Toucano Beans] getSession failed:', error.message);
+          setSession(null);
+        } else {
+          setSession(data.session);
+        }
+      } catch (err) {
+        console.error('[Toucano Beans] Unexpected auth init error:', err);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
+
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        setSession(nextSession);
+      });
+      subscription = authListener.subscription;
+    }
+
+    initAuth();
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
