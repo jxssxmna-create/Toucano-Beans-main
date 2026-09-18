@@ -1,8 +1,21 @@
-# Supabase Auth & Profiles
+# Supabase Auth, Profiles & Admin Catalog
 
-## Local SQL
+## Migrations
 
-Apply the migration in `supabase/migrations/20250918210000_harden_profiles_auth.sql` via the Supabase SQL editor or MCP `apply_migration`.
+Apply files in `supabase/migrations/` (SQL editor or MCP):
+
+| File | Purpose |
+|------|---------|
+| `20250918210000_harden_profiles_auth.sql` | Profiles, signup trigger, RLS |
+| `20250918211000_profiles_is_admin_helper.sql` | `is_admin()` helper |
+| `20250919010000_admin_products_storage.sql` | Products + `product-images` bucket |
+
+## Admin access
+
+Admin if `profiles.role = 'admin'` **or** email ends with `@admin.com`  
+(Signup trigger + migration backfill assign the role. RLS writes use `is_admin()`.)
+
+Route: `/admin` — menu link visible to admins only.
 
 ## Env
 
@@ -10,23 +23,5 @@ Apply the migration in `supabase/migrations/20250918210000_harden_profiles_auth.
 cp .env.example .env.local
 ```
 
-Required:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
-
-## Frontend map
-
-| File | Role |
-|------|------|
-| `src/lib/supabaseClient.js` | Client init + session storage |
-| `src/lib/authHelpers.js` | Validation + error mapping |
-| `src/lib/profileSchema.js` | Profile field contract |
-| `src/pages/SignUp.jsx` | Primary email sign-up / sign-in (wired in App) |
-| `src/components/Auth.jsx` | Email + phone auth variant |
-| `src/components/AccountPage.jsx` | Profile + delivery address CRUD |
-| `src/components/VerifyModal.jsx` | OTP verification for checkout |
-| `src/components/RoleRouter.jsx` | Route by `profiles.role` |
-
-## Profiles columns
-
-`id`, `email`, `full_name`, `phone_number`, `role`, `building_number`, `street_number`, `zone_number`, `google_map_link`, `created_at`, `updated_at`
