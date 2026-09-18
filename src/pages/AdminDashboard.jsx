@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProductForm from '../components/admin/ProductForm';
 import ProductList from '../components/admin/ProductList';
+import Logo from '../components/Logo';
 import {
   createProduct,
   deleteProduct,
@@ -103,12 +104,15 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
     <div className="bg-[#fdf0de] text-slate-900 min-h-screen" dir={isAr ? 'rtl' : 'ltr'}>
       <header className="border-b border-slate-300/70 bg-[#fdf0de]/80 backdrop-blur sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-brandorange font-bold">
-              {isAr ? 'لوحة التحكم' : 'Admin Panel'}
-            </p>
-            <h1 className="text-2xl font-extrabold text-slate-900">Toucano Beans</h1>
-            <p className="text-xs text-slate-500">{session?.user?.email}</p>
+          <div className="flex items-center gap-3 min-w-0">
+            <Logo size="sm" className="shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wider text-brandorange font-bold">
+                {isAr ? 'لوحة التحكم' : 'Admin Panel'}
+              </p>
+              <h1 className="text-2xl font-extrabold text-slate-900 truncate">Toucano Beans</h1>
+              <p className="text-xs text-slate-500 truncate">{session?.user?.email}</p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button

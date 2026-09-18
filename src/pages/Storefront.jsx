@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AccountPage from '../components/AccountPage';
+import Logo from '../components/Logo';
 import SignUp from './SignUp';
 import Checkout from './Checkout';
 import { fetchProducts } from '../lib/productsApi';
+import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 
 const translations = {
@@ -117,11 +119,6 @@ export default function Storefront({
     setActivePage(page);
     setIsMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleImageError = (e) => {
-    e.target.onerror = null;
-    e.target.src = '/assets/logo.png';
   };
 
   const handleLogout = async () => {
@@ -335,12 +332,7 @@ export default function Storefront({
 
       {activePage !== 'home' && (
         <header className="text-center pt-10 pb-4 cursor-pointer" onClick={() => navigateTo('home')}>
-          <img
-            src="/assets/logo.png"
-            onError={handleImageError}
-            alt="Toucano Beans Logo"
-            className="h-20 mx-auto mb-2 object-contain"
-          />
+          <Logo size="md" className="mx-auto mb-2" />
           <h1 className="text-xl font-extrabold tracking-wider text-slate-900 uppercase">
             TOUCANO BEANS
           </h1>
@@ -351,12 +343,7 @@ export default function Storefront({
         {activePage === 'home' && (
           <section className="w-full max-w-4xl flex flex-col items-center">
             <div className="text-center mb-16 cursor-pointer" onClick={() => navigateTo('home')}>
-              <img
-                src="/assets/logo.png"
-                onError={handleImageError}
-                alt="Toucano Beans Logo"
-                className="h-44 sm:h-52 mx-auto mb-4 object-contain"
-              />
+              <Logo size="xl" className="mx-auto mb-4" />
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-900 uppercase">
                 TOUCANO BEANS
               </h1>
@@ -395,10 +382,10 @@ export default function Storefront({
                     className="bg-white p-5 rounded-2xl shadow border border-slate-200 text-center"
                   >
                     <img
-                      src={product.image_url || '/assets/logo.png'}
+                      src={product.image_url || LOGO_SRC}
                       alt={product.name}
-                      onError={handleImageError}
-                      className="h-40 w-full object-cover rounded-xl mb-4 bg-orange-50"
+                      onError={handleLogoError}
+                      className="h-40 w-full object-contain rounded-xl mb-4 bg-orange-50 p-2"
                     />
                     <h3 className="font-bold text-slate-800 text-lg">{product.name}</h3>
                     {product.description && (

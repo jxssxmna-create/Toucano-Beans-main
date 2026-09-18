@@ -1,4 +1,5 @@
 import { PRODUCT_CATEGORIES } from '../../lib/productsApi';
+import { LOGO_SRC, handleLogoError } from '../../lib/logo';
 
 export default function ProductList({
   products,
@@ -35,13 +36,10 @@ export default function ProductList({
                       className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:items-center shadow-sm"
                     >
                       <img
-                        src={product.image_url || '/assets/logo.png'}
+                        src={product.image_url || LOGO_SRC}
                         alt={product.name}
-                        className="h-20 w-20 rounded-lg object-cover border border-slate-100 shrink-0"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/assets/logo.png';
-                        }}
+                        className="h-20 w-20 rounded-lg object-contain border border-slate-100 shrink-0 bg-orange-50/50 p-1"
+                        onError={handleLogoError}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-800 truncate">{product.name}</p>
@@ -76,7 +74,7 @@ export default function ProductList({
                           onClick={() => onDelete(product)}
                           className="px-3 py-1.5 text-sm rounded-lg bg-red-500 text-white disabled:opacity-40 hover:bg-red-600"
                         >
-                          {busy ? (isAr ? '...' : '...') : isAr ? 'حذف' : 'Delete'}
+                          {busy ? '...' : isAr ? 'حذف' : 'Delete'}
                         </button>
                       </div>
                     </li>
