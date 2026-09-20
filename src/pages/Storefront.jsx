@@ -65,7 +65,7 @@ function CategoryIcon({ type }) {
   const box = 'w-14 h-14 block mx-auto';
   if (type === 'coffee-beans') {
     return (
-      <svg className={box} viewBox="0 0 64 64" fill="#000000" aria-hidden="true">
+      <svg className={box} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
         <ellipse cx="18" cy="24" rx="10" ry="14" transform="rotate(-30 18 24)" />
         <ellipse cx="42" cy="22" rx="10" ry="14" transform="rotate(22 42 22)" />
         <ellipse cx="32" cy="44" rx="10" ry="14" transform="rotate(-6 32 44)" />
@@ -74,20 +74,18 @@ function CategoryIcon({ type }) {
   }
   if (type === 'drip-coffee') {
     return (
-      <svg className={box} viewBox="0 0 64 64" fill="#000000" aria-hidden="true">
+      <svg className={box} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
         <path d="M32 6C32 6 50 28 50 40a18 18 0 1 1-36 0C14 28 32 6 32 6z" />
       </svg>
     );
   }
   return (
-    <svg className={box} viewBox="0 0 64 64" fill="#000000" aria-hidden="true">
-      {/* Mug body */}
+    <svg className={box} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
       <path d="M10 16h34v26c0 7.732-6.268 14-14 14H24C16.268 56 10 49.732 10 42V16z" />
-      {/* Side handle */}
       <path
         d="M44 22h5a11 11 0 0 1 0 22h-5"
         fill="none"
-        stroke="#000000"
+        stroke="currentColor"
         strokeWidth="6"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -170,10 +168,10 @@ export default function Storefront({
       <div dir="ltr" className="fixed top-6 left-6 right-6 z-30 pointer-events-none h-12">
         <button
           onClick={() => navigateTo('checkout')}
-          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-brandorange transition focus:outline-none"
+          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-amber-600 transition focus:outline-none"
           aria-label="Cart"
         >
-          <svg className="w-7 h-7" fill="none" stroke="#000000" strokeWidth="2.25" viewBox="0 0 24 24">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -187,10 +185,10 @@ export default function Storefront({
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="pointer-events-auto absolute right-0 top-0 p-3 text-black hover:text-brandorange transition focus:outline-none"
+          className="pointer-events-auto absolute right-0 top-0 p-3 text-black hover:text-amber-600 transition focus:outline-none"
           aria-label="Menu"
         >
-          <svg className="w-8 h-8" fill="none" stroke="#000000" strokeWidth="2.5" viewBox="0 0 24 24">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
@@ -386,12 +384,12 @@ export default function Storefront({
                 <button
                   key={cat}
                   onClick={() => navigateTo(cat)}
-                  className="group flex flex-col items-center justify-center transition transform hover:-translate-y-1"
+                  className="group flex flex-col items-center justify-center transition transform hover:-translate-y-1 text-black hover:text-amber-600"
                 >
-                  <div className="mb-3 flex items-center justify-center">
+                  <div className="mb-3 flex items-center justify-center text-inherit group-hover:text-amber-600 transition-colors">
                     <CategoryIcon type={cat} />
                   </div>
-                  <span className="text-lg font-black text-black group-hover:text-brandorange transition">
+                  <span className="text-lg font-black text-inherit group-hover:text-amber-600 transition-colors">
                     {t[CATEGORY_KEYS[cat]]}
                   </span>
                 </button>
