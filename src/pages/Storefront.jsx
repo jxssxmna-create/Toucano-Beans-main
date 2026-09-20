@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AccountSection from '../components/AccountSection';
 import PolicyModal from '../components/PolicyModal';
+import ProductDetailModal from '../components/ProductDetailModal';
+import QuantitySelector from '../components/QuantitySelector';
 import Logo from '../components/Logo';
 import Checkout from './Checkout';
 import { fetchProducts } from '../lib/productsApi';
+import { resolveCategoryProducts } from '../lib/productCatalog';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 
@@ -30,6 +33,7 @@ const translations = {
     logout: 'Log Out',
     noProducts: 'No products available yet.',
     loadingProducts: 'Loading products...',
+    tastingNotes: 'Tasting Notes',
   },
   ar: {
     menuHeading: 'القائمة',
@@ -52,6 +56,7 @@ const translations = {
     logout: 'تسجيل الخروج',
     noProducts: 'لا توجد منتجات حالياً.',
     loadingProducts: 'جاري تحميل المنتجات...',
+    tastingNotes: 'ملاحظات التذوق',
   },
 };
 
@@ -108,12 +113,33 @@ export default function Storefront({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
-  const [cartCount] = useState(0);
+  /** cart: { [productId]: { qty, product } } */
+  const [cart, setCart] = useState({});
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [policyModal, setPolicyModal] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const t = translations[lang];
+  const cartCount = useMemo(
+    () => Object.values(cart).reduce((sum, entry) => sum + (Number(entry?.qty) || 0), 0),
+    [cart]
+  );
+
+  function getQty(productId) {
+    return Number(cart[productId]?.qty) || 0;
+  }
+
+  function setQty(product, qty) {
+    if (!product?.id) return;
+    const nextQty = Math.max(0, Number(qty) || 0);
+    setCart((prev) => {
+      const next = { ...prev };
+      if (nextQty <= 0) delete next[product.id];
+      else next[product.id] = { qty: nextQty, product };
+      return next;
+    });
+  }
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -126,7 +152,7 @@ export default function Storefront({
 
   useEffect(() => {
     const categories = ['coffee-beans', 'drip-coffee', 'essentials'];
-    if (!categories.includes(activePage) || !isSupabaseConfigured) {
+    if (!categories.includes(activePage)) {
       setCategoryProducts([]);
       return;
     }
@@ -135,11 +161,15 @@ export default function Storefront({
     async function load() {
       setProductsLoading(true);
       try {
-        const data = await fetchProducts(activePage);
-        if (!cancelled) setCategoryProducts(data);
-      } catch (err) {
-        console.error('Failed to load products:', err.message);
-        if (!cancelled) setCategoryProducts([]);
+        let remote = [];
+        if (isSupabaseConfigured) {
+          try {
+            remote = await fetchProducts(activePage);
+          } catch (err) {
+            console.error('Failed to load products:', err.message);
+          }
+        }
+        if (!cancelled) setCategoryProducts(resolveCategoryProducts(activePage, remote));
       } finally {
         if (!cancelled) setProductsLoading(false);
       }
@@ -411,26 +441,44 @@ export default function Storefront({
               <p className="text-center text-black/70 font-bold">{t.noProducts}</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {categoryProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="bg-white p-5 rounded-2xl shadow border border-slate-200 text-center"
-                  >
-                    <img
-                      src={product.image_url || LOGO_SRC}
-                      alt={product.name}
-                      onError={handleLogoError}
-                      className="h-40 w-full object-contain rounded-xl mb-4 bg-orange-50 p-2"
-                    />
-                    <h3 className="font-black text-black text-lg">{product.name}</h3>
-                    {product.description && (
-                      <p className="text-sm text-black/70 mt-1 line-clamp-2 font-bold">{product.description}</p>
-                    )}
-                    <p className="text-brandorange font-black mt-2 text-base">
-                      {Number(product.price).toFixed(2)} QAR
-                    </p>
-                  </div>
-                ))}
+                {categoryProducts.map((product) => {
+                  const qty = getQty(product.id);
+                  return (
+                    <button
+                      type="button"
+                      key={product.id}
+                      onClick={() => setSelectedProduct(product)}
+                      className="bg-white p-5 rounded-2xl shadow border border-slate-200 text-center hover:border-[#FF5500]/40 transition text-start focus:outline-none focus:ring-2 focus:ring-[#FF5500]/40"
+                    >
+                      <img
+                        src={product.image_url || LOGO_SRC}
+                        alt={product.name}
+                        onError={handleLogoError}
+                        className="h-40 w-full object-contain rounded-xl mb-4 bg-orange-50 p-2 pointer-events-none"
+                      />
+                      <h3 className="font-black text-black text-lg text-center">{product.name}</h3>
+                      {product.tastingNotes && (
+                        <p className="text-xs text-black/55 mt-1 line-clamp-1 font-bold text-center">
+                          {product.tastingNotes}
+                        </p>
+                      )}
+                      {!product.tastingNotes && product.description && (
+                        <p className="text-sm text-black/70 mt-1 line-clamp-2 font-bold text-center">
+                          {product.description}
+                        </p>
+                      )}
+                      <p className="text-brandorange font-black mt-2 text-base text-center">
+                        {Number(product.price).toFixed(2)} QAR
+                      </p>
+                      <div className="mt-4 flex justify-center">
+                        <QuantitySelector
+                          value={qty}
+                          onChange={(next) => setQty(product, next)}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </section>
@@ -490,7 +538,12 @@ export default function Storefront({
 
         {activePage === 'checkout' && (
           <section className="w-full max-w-md">
-            <Checkout user={session?.user} />
+            <Checkout
+              user={session?.user}
+              cart={cart}
+              onQtyChange={setQty}
+              lang={lang}
+            />
           </section>
         )}
       </main>
@@ -518,6 +571,16 @@ export default function Storefront({
 
       {policyModal && (
         <PolicyModal type={policyModal} lang={lang} onClose={() => setPolicyModal(null)} />
+      )}
+
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          qty={getQty(selectedProduct.id)}
+          onQtyChange={(next) => setQty(selectedProduct, next)}
+          onClose={() => setSelectedProduct(null)}
+          lang={lang}
+        />
       )}
     </div>
   );

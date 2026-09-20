@@ -1,69 +1,100 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import VerifyModal from '../components/VerifyModal';
+import QuantitySelector from '../components/QuantitySelector';
 
-export default function Checkout({ user }) {
+export default function Checkout({ user, cart = {}, onQtyChange, lang = 'en' }) {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const isAr = lang === 'ar';
 
-  // Guests can still place a demo order; verified accounts skip the OTP modal
   const isVerified = Boolean(user?.email_confirmed_at || user?.phone_confirmed_at);
 
+  const lines = useMemo(
+    () =>
+      Object.values(cart)
+        .filter((entry) => entry?.qty > 0 && entry?.product)
+        .map((entry) => ({
+          ...entry,
+          lineTotal: Number(entry.product.price) * Number(entry.qty),
+        })),
+    [cart]
+  );
+
+  const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
+
   async function handlePlaceOrder() {
+    if (lines.length === 0) return;
     if (user && !isVerified) {
       setShowVerifyModal(true);
       return;
     }
-
     await completeOrder();
   }
 
   async function completeOrder() {
     setLoading(true);
     try {
-      // Order persistence can be wired to Supabase when the orders table is ready
-      alert('Order placed successfully! Delivery details sent to driver.');
+      alert(isAr ? 'تم تقديم الطلب بنجاح!' : 'Order placed successfully! Delivery details sent to driver.');
     } catch (error) {
       console.error('Error placing order:', error?.message || error);
-      alert('Failed to place order. Please try again.');
+      alert(isAr ? 'فشل تقديم الطلب.' : 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div
-      style={{
-        maxWidth: '500px',
-        margin: '40px auto',
-        padding: '24px',
-        backgroundColor: '#fdf0de',
-        borderRadius: '12px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-        color: '#000000',
-        fontFamily: 'sans-serif',
-      }}
-    >
-      <h2 style={{ marginTop: 0 }}>Checkout</h2>
-      <p style={{ color: '#555' }}>Review your coffee cart and complete your order.</p>
+    <div className="w-full bg-white border border-slate-200 rounded-2xl shadow p-5 space-y-4 text-black">
+      <h2 className="text-2xl font-black m-0">{isAr ? 'الدفع' : 'Checkout'}</h2>
+      <p className="text-sm font-bold text-black/60 m-0">
+        {isAr ? 'راجع سلة القهوة وأكمل طلبك.' : 'Review your coffee cart and complete your order.'}
+      </p>
+
+      {lines.length === 0 ? (
+        <p className="font-bold text-black/50 py-6 text-center">
+          {isAr ? 'سلتك فارغة.' : 'Your cart is empty.'}
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {lines.map(({ product, qty, lineTotal }) => (
+            <li
+              key={product.id}
+              className="flex flex-col gap-2 border border-slate-200 rounded-xl p-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-black text-sm">{product.name}</p>
+                  <p className="text-xs font-bold text-black/50">
+                    {Number(product.price).toFixed(2)} QAR
+                  </p>
+                </div>
+                <p className="font-black text-[#FF5500] text-sm whitespace-nowrap">
+                  {lineTotal.toFixed(2)} QAR
+                </p>
+              </div>
+              <QuantitySelector
+                value={qty}
+                onChange={(next) => onQtyChange?.(product, next)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {lines.length > 0 && (
+        <div className="flex items-center justify-between border-t border-slate-200 pt-3">
+          <span className="font-black">{isAr ? 'الإجمالي' : 'Total'}</span>
+          <span className="font-black text-[#FF5500] text-lg">{total.toFixed(2)} QAR</span>
+        </div>
+      )}
 
       <button
+        type="button"
         onClick={handlePlaceOrder}
-        disabled={loading}
-        style={{
-          width: '100%',
-          padding: '12px 24px',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          backgroundColor: '#c84b1d',
-          color: '#ffffff',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          opacity: loading ? 0.7 : 1,
-          marginTop: '20px',
-        }}
+        disabled={loading || lines.length === 0}
+        className="w-full py-3 rounded-lg font-black bg-[#c84b1d] text-white disabled:opacity-50 hover:bg-[#a83d16] transition"
       >
-        {loading ? 'Processing...' : 'Place Order'}
+        {loading ? (isAr ? 'جاري المعالجة...' : 'Processing...') : isAr ? 'تأكيد الطلب' : 'Place Order'}
       </button>
 
       {showVerifyModal && (
