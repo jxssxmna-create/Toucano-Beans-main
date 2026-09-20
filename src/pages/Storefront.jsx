@@ -62,34 +62,42 @@ const CATEGORY_KEYS = {
 };
 
 function CategoryIcon({ type }) {
-  const common = 'w-14 h-14 text-slate-800 group-hover:text-brandorange transition';
+  const box = 'w-14 h-14 block mx-auto';
   if (type === 'coffee-beans') {
     return (
-      <svg className={common} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
-        <ellipse cx="18" cy="22" rx="9" ry="13" transform="rotate(-28 18 22)" />
-        <path d="M14 16c2 4 3 8 2 13" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
-        <ellipse cx="40" cy="20" rx="9" ry="13" transform="rotate(18 40 20)" />
-        <path d="M37 14c1.5 4 2 8 1 12" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
-        <ellipse cx="30" cy="42" rx="9" ry="13" transform="rotate(-8 30 42)" />
-        <path d="M27 36c1.8 4 2.2 8 1 12" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
+      <svg className={box} viewBox="0 0 64 64" fill="#000000" aria-hidden="true">
+        <ellipse cx="18" cy="24" rx="10" ry="14" transform="rotate(-30 18 24)" />
+        <ellipse cx="42" cy="22" rx="10" ry="14" transform="rotate(22 42 22)" />
+        <ellipse cx="32" cy="44" rx="10" ry="14" transform="rotate(-6 32 44)" />
       </svg>
     );
   }
   if (type === 'drip-coffee') {
     return (
-      <svg className={common} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
-        <path d="M32 8c0 0 16 18 16 30a16 16 0 1 1-32 0C16 26 32 8 32 8z" />
-        <path d="M32 22c0 6-3 10-3 16" fill="none" stroke="#fdf0de" strokeWidth="2.5" strokeLinecap="round" opacity="0.55" />
+      <svg className={box} viewBox="0 0 64 64" fill="#000000" aria-hidden="true">
+        <path d="M32 6C32 6 50 28 50 40a18 18 0 1 1-36 0C14 28 32 6 32 6z" />
       </svg>
     );
   }
   return (
-    <svg className={common} viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14 22h28v18a10 10 0 0 1-10 10H24a10 10 0 0 1-10-10V22z" fill="currentColor" stroke="none" />
-      <path d="M42 26h6a6 6 0 0 1 0 12h-6" />
-      <path d="M12 56h32" />
-      <path d="M22 14c0 0 2-4 6-4s6 4 6 4" opacity="0.7" />
-      <path d="M28 10c0 0 1-3 4-3" opacity="0.5" />
+    <svg className={box} viewBox="0 0 64 64" fill="#000000" aria-hidden="true">
+      <path d="M12 20h32v20c0 6.627-5.373 12-12 12H24c-6.627 0-12-5.373-12-12V20z" />
+      <path d="M44 24h5a8 8 0 1 1 0 16h-5V24z" />
+      <rect x="10" y="54" width="36" height="4" rx="1" />
+      <path
+        d="M24 10c1.5-3 4-5 8-5 2 0 3.5.5 5 1.5"
+        fill="none"
+        stroke="#000000"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M30 6c1-2 2.5-3.5 5-3.5"
+        fill="none"
+        stroke="#000000"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -163,55 +171,57 @@ export default function Storefront({
   };
 
   return (
-    <div className="bg-[#fdf0de] text-slate-900 min-h-screen flex flex-col justify-between relative">
-      {/* Physical left/right so menu stays top-right in both LTR and RTL */}
-      <div className="fixed top-6 left-6 right-6 z-30 pointer-events-none h-12">
+    <div className="bg-[#fdf0de] text-black min-h-screen flex flex-col justify-between relative font-bold">
+      {/* Cart left / Menu right — dir=ltr keeps physical sides in Arabic RTL */}
+      <div dir="ltr" className="fixed top-6 left-6 right-6 z-30 pointer-events-none h-12">
         <button
           onClick={() => navigateTo('checkout')}
-          className="pointer-events-auto absolute left-0 top-0 p-3 text-slate-800 hover:text-brandorange transition focus:outline-none"
+          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-brandorange transition focus:outline-none"
           aria-label="Cart"
         >
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-7 h-7" fill="none" stroke="#000000" strokeWidth="2.25" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth="2"
               d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
             />
           </svg>
-          <span className="absolute -top-1 -right-1 bg-brandorange text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 bg-brandorange text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
             {cartCount}
           </span>
         </button>
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="pointer-events-auto absolute right-0 top-0 p-3 text-slate-800 hover:text-brandorange transition focus:outline-none"
+          className="pointer-events-auto absolute right-0 top-0 p-3 text-black hover:text-brandorange transition focus:outline-none"
           aria-label="Menu"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          <svg className="w-8 h-8" fill="none" stroke="#000000" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
       </div>
 
+      {/* Drawer always right — dir=ltr locks right-0 regardless of page RTL */}
       <div
-        className={`fixed inset-y-0 ${
-          lang === 'ar' ? 'right-0 border-l' : 'left-0 border-r'
-        } w-64 bg-[#fdf0de] border-slate-300/60 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
-          isMenuOpen ? 'translate-x-0' : lang === 'ar' ? 'translate-x-full' : '-translate-x-full'
+        dir="ltr"
+        className={`fixed inset-y-0 right-0 w-64 bg-[#fdf0de] border-l border-slate-300/60 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
+          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="p-6 flex flex-col h-full justify-between overflow-y-auto">
+        <div
+          dir={lang === 'ar' ? 'rtl' : 'ltr'}
+          className="p-6 flex flex-col h-full justify-between overflow-y-auto"
+        >
           <div>
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-bold text-slate-800">{t.menuHeading}</h2>
+              <h2 className="text-xl font-black text-black">{t.menuHeading}</h2>
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="text-slate-500 hover:text-slate-800 focus:outline-none"
+                className="text-black hover:text-brandorange focus:outline-none"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-6 h-6" fill="none" stroke="#000000" strokeWidth="2.25" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
@@ -219,13 +229,13 @@ export default function Storefront({
             <nav className="space-y-4">
               <button
                 onClick={() => navigateTo('home')}
-                className="block w-full text-start text-slate-700 hover:text-brandorange font-medium"
+                className="block w-full text-start text-black hover:text-brandorange font-extrabold"
               >
                 {t.main}
               </button>
               <button
                 onClick={() => navigateTo('story')}
-                className="block w-full text-start text-slate-700 hover:text-brandorange font-medium"
+                className="block w-full text-start text-black hover:text-brandorange font-extrabold"
               >
                 {t.story}
               </button>
@@ -233,7 +243,7 @@ export default function Storefront({
               <div>
                 <button
                   onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                  className="w-full flex items-center justify-between text-slate-700 hover:text-brandorange font-medium focus:outline-none"
+                  className="w-full flex items-center justify-between text-black hover:text-brandorange font-extrabold focus:outline-none"
                 >
                   <span>{t.categories}</span>
                   <svg
@@ -241,33 +251,30 @@ export default function Storefront({
                       isCategoriesOpen ? 'rotate-180' : ''
                     }`}
                     fill="none"
-                    stroke="currentColor"
+                    stroke="#000000"
+                    strokeWidth="2.25"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 {isCategoriesOpen && (
-                  <div
-                    className={`${
-                      lang === 'ar' ? 'pr-4 border-r-2' : 'pl-4 border-l-2'
-                    } mt-2 space-y-2 border-brandorange/30`}
-                  >
+                  <div className="ps-4 mt-2 space-y-2 border-s-2 border-brandorange/40">
                     <button
                       onClick={() => navigateTo('coffee-beans')}
-                      className="block text-sm text-slate-600 hover:text-brandorange"
+                      className="block text-sm text-black/80 hover:text-brandorange font-bold"
                     >
                       {t.beans}
                     </button>
                     <button
                       onClick={() => navigateTo('drip-coffee')}
-                      className="block text-sm text-slate-600 hover:text-brandorange"
+                      className="block text-sm text-black/80 hover:text-brandorange font-bold"
                     >
                       {t.drip}
                     </button>
                     <button
                       onClick={() => navigateTo('essentials')}
-                      className="block text-sm text-slate-600 hover:text-brandorange"
+                      className="block text-sm text-black/80 hover:text-brandorange font-bold"
                     >
                       {t.essentials}
                     </button>
@@ -278,7 +285,7 @@ export default function Storefront({
               <div>
                 <button
                   onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                  className="w-full flex items-center justify-between text-slate-700 hover:text-brandorange font-medium focus:outline-none"
+                  className="w-full flex items-center justify-between text-black hover:text-brandorange font-extrabold focus:outline-none"
                 >
                   <span>{t.language}</span>
                   <svg
@@ -286,24 +293,21 @@ export default function Storefront({
                       isLanguageOpen ? 'rotate-180' : ''
                     }`}
                     fill="none"
-                    stroke="currentColor"
+                    stroke="#000000"
+                    strokeWidth="2.25"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 {isLanguageOpen && (
-                  <div
-                    className={`${
-                      lang === 'ar' ? 'pr-4 border-r-2' : 'pl-4 border-l-2'
-                    } mt-2 space-y-2 border-brandorange/30`}
-                  >
+                  <div className="ps-4 mt-2 space-y-2 border-s-2 border-brandorange/40">
                     <button
                       onClick={() => {
                         setLang('en');
                         setIsMenuOpen(false);
                       }}
-                      className="block w-full text-start text-sm text-slate-600 hover:text-brandorange"
+                      className="block w-full text-start text-sm text-black/80 hover:text-brandorange font-bold"
                     >
                       English
                     </button>
@@ -312,7 +316,7 @@ export default function Storefront({
                         setLang('ar');
                         setIsMenuOpen(false);
                       }}
-                      className="block w-full text-start text-sm text-slate-600 hover:text-brandorange"
+                      className="block w-full text-start text-sm text-black/80 hover:text-brandorange font-bold"
                     >
                       العربية (Arabic)
                     </button>
@@ -322,19 +326,19 @@ export default function Storefront({
 
               <button
                 onClick={() => navigateTo('contact')}
-                className="block w-full text-start text-slate-700 hover:text-brandorange font-medium"
+                className="block w-full text-start text-black hover:text-brandorange font-extrabold"
               >
                 {t.contact}
               </button>
               <button
                 onClick={() => navigateTo('account')}
-                className="block w-full text-start text-slate-700 hover:text-brandorange font-medium"
+                className="block w-full text-start text-black hover:text-brandorange font-extrabold"
               >
                 {t.account}
               </button>
               <button
                 onClick={() => navigateTo('checkout')}
-                className="block w-full text-start text-slate-700 hover:text-brandorange font-medium"
+                className="block w-full text-start text-black hover:text-brandorange font-extrabold"
               >
                 {t.checkout}
               </button>
@@ -343,7 +347,7 @@ export default function Storefront({
                 <Link
                   to="/admin"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block w-full text-start text-brandorange hover:text-orange-700 font-bold pt-2"
+                  className="block w-full text-start text-brandorange hover:text-orange-700 font-black pt-2"
                 >
                   {t.admin}
                 </Link>
@@ -352,7 +356,7 @@ export default function Storefront({
               {session && (
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-start text-red-600 hover:text-red-700 font-medium pt-4 border-t border-slate-300"
+                  className="block w-full text-start text-red-700 hover:text-red-800 font-extrabold pt-4 border-t border-slate-300"
                 >
                   {t.logout}
                 </button>
@@ -369,9 +373,7 @@ export default function Storefront({
       {activePage !== 'home' && (
         <header className="text-center pt-10 pb-4 cursor-pointer" onClick={() => navigateTo('home')}>
           <Logo size="md" className="mx-auto mb-2" />
-          <h1 className="text-xl font-extrabold tracking-wider text-slate-900 uppercase">
-            TOUCANO BEANS
-          </h1>
+          <h1 className="text-xl font-black tracking-wider text-black uppercase">TOUCANO BEANS</h1>
         </header>
       )}
 
@@ -380,7 +382,7 @@ export default function Storefront({
           <section className="w-full max-w-4xl flex flex-col items-center">
             <div className="text-center mb-16 cursor-pointer" onClick={() => navigateTo('home')}>
               <Logo size="xl" className="mx-auto mb-4" />
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-900 uppercase">
+              <h1 className="text-3xl sm:text-4xl font-black tracking-wider text-black uppercase">
                 TOUCANO BEANS
               </h1>
             </div>
@@ -395,7 +397,7 @@ export default function Storefront({
                   <div className="mb-3 flex items-center justify-center">
                     <CategoryIcon type={cat} />
                   </div>
-                  <span className="text-lg font-bold text-slate-800 group-hover:text-brandorange transition">
+                  <span className="text-lg font-black text-black group-hover:text-brandorange transition">
                     {t[CATEGORY_KEYS[cat]]}
                   </span>
                 </button>
@@ -406,13 +408,13 @@ export default function Storefront({
 
         {['coffee-beans', 'drip-coffee', 'essentials'].includes(activePage) && (
           <section className="w-full max-w-5xl">
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-8 text-center">
+            <h2 className="text-3xl font-black text-black mb-8 text-center">
               {t[CATEGORY_KEYS[activePage]]}
             </h2>
             {productsLoading ? (
-              <p className="text-center text-slate-600">{t.loadingProducts}</p>
+              <p className="text-center text-black font-bold">{t.loadingProducts}</p>
             ) : categoryProducts.length === 0 ? (
-              <p className="text-center text-slate-500">{t.noProducts}</p>
+              <p className="text-center text-black/70 font-bold">{t.noProducts}</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {categoryProducts.map((product) => (
@@ -426,11 +428,11 @@ export default function Storefront({
                       onError={handleLogoError}
                       className="h-40 w-full object-contain rounded-xl mb-4 bg-orange-50 p-2"
                     />
-                    <h3 className="font-bold text-slate-800 text-lg">{product.name}</h3>
+                    <h3 className="font-black text-black text-lg">{product.name}</h3>
                     {product.description && (
-                      <p className="text-sm text-slate-500 mt-1 line-clamp-2">{product.description}</p>
+                      <p className="text-sm text-black/70 mt-1 line-clamp-2 font-bold">{product.description}</p>
                     )}
-                    <p className="text-brandorange font-bold mt-2 text-base">
+                    <p className="text-brandorange font-black mt-2 text-base">
                       {Number(product.price).toFixed(2)} QAR
                     </p>
                   </div>
@@ -442,36 +444,36 @@ export default function Storefront({
 
         {activePage === 'story' && (
           <section className="w-full max-w-2xl text-center">
-            <h2 className="text-3xl font-bold mb-4 text-slate-900">{t.storyTitle}</h2>
-            <p className="text-slate-700 leading-relaxed">{t.storyBody}</p>
+            <h2 className="text-3xl font-black mb-4 text-black">{t.storyTitle}</h2>
+            <p className="text-black leading-relaxed font-bold">{t.storyBody}</p>
           </section>
         )}
 
         {activePage === 'contact' && (
           <section className="w-full max-w-md text-center">
-            <h2 className="text-3xl font-bold mb-6 text-slate-900">{t.contactTitle}</h2>
+            <h2 className="text-3xl font-black mb-6 text-black">{t.contactTitle}</h2>
             <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 space-y-6">
               <div>
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <span className="block text-xs font-black text-black/60 uppercase tracking-wider mb-1">
                   {t.officialEmail}
                 </span>
                 <a
                   href="mailto:toucanobeans@gmail.com"
-                  className="text-lg font-bold text-brandorange hover:underline break-all"
+                  className="text-lg font-black text-brandorange hover:underline break-all"
                 >
                   toucanobeans@gmail.com
                 </a>
               </div>
               <hr className="border-slate-200" />
               <div>
-                <span className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <span className="block text-xs font-black text-black/60 uppercase tracking-wider mb-1">
                   WhatsApp
                 </span>
                 <a
                   href="https://wa.me/97466609060"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-lg font-bold text-emerald-600 hover:underline"
+                  className="inline-flex items-center gap-2 text-lg font-black text-emerald-700 hover:underline"
                 >
                   <span>+974 6660 9060</span>
                 </a>
@@ -487,7 +489,7 @@ export default function Storefront({
               <button
                 type="button"
                 onClick={() => navigate('/admin')}
-                className="mt-4 w-full bg-brandorange text-white font-bold py-2.5 rounded-lg"
+                className="mt-4 w-full bg-brandorange text-white font-black py-2.5 rounded-lg"
               >
                 {t.admin}
               </button>
@@ -502,7 +504,7 @@ export default function Storefront({
         )}
       </main>
 
-      <footer className="text-center py-4 text-xs text-slate-500 border-t border-slate-300">
+      <footer className="text-center py-4 text-xs text-black/70 font-bold border-t border-slate-300">
         © 2026 Toucano Beans. All rights reserved.
       </footer>
     </div>
