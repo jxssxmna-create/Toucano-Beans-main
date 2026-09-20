@@ -168,7 +168,7 @@ export default function Storefront({
       <div dir="ltr" className="fixed top-6 left-6 right-6 z-30 pointer-events-none h-12">
         <button
           onClick={() => navigateTo('checkout')}
-          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-amber-600 transition focus:outline-none"
+          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-[#FF5500] transition focus:outline-none"
           aria-label="Cart"
         >
           <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
@@ -185,7 +185,7 @@ export default function Storefront({
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="pointer-events-auto absolute right-0 top-0 p-3 text-black hover:text-amber-600 transition focus:outline-none"
+          className="pointer-events-auto absolute right-0 top-0 p-3 text-black hover:text-[#FF5500] transition focus:outline-none"
           aria-label="Menu"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -384,12 +384,12 @@ export default function Storefront({
                 <button
                   key={cat}
                   onClick={() => navigateTo(cat)}
-                  className="group flex flex-col items-center justify-center transition transform hover:-translate-y-1 text-black hover:text-amber-600"
+                  className="group flex flex-col items-center justify-center transition transform hover:-translate-y-1 text-black hover:text-[#FF5500]"
                 >
-                  <div className="mb-3 flex items-center justify-center text-inherit group-hover:text-amber-600 transition-colors">
+                  <div className="mb-3 flex items-center justify-center text-inherit group-hover:text-[#FF5500] transition-colors">
                     <CategoryIcon type={cat} />
                   </div>
-                  <span className="text-lg font-black text-inherit group-hover:text-amber-600 transition-colors">
+                  <span className="text-lg font-black text-inherit group-hover:text-[#FF5500] transition-colors">
                     {t[CATEGORY_KEYS[cat]]}
                   </span>
                 </button>
