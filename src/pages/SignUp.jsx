@@ -7,8 +7,12 @@ import {
   getAuthErrorMessage,
 } from '../lib/authHelpers';
 
-export default function SignUp() {
-  const [isSignUp, setIsSignUp] = useState(true);
+export default function SignUp({
+  initialMode = 'signup',
+  hideModeSwitch = false,
+  deliveryContext = false,
+}) {
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -81,7 +85,11 @@ export default function SignUp() {
         });
 
         if (error) throw error;
-        setSuccessMessage('Signed in successfully.');
+        setSuccessMessage(
+          deliveryContext
+            ? 'Signed in. Open the Delivery tab after your profile loads if you have the delivery role.'
+            : 'Signed in successfully.'
+        );
       }
     } catch (err) {
       setErrorMessage(getAuthErrorMessage(err));
@@ -94,17 +102,20 @@ export default function SignUp() {
     <div
       style={{
         maxWidth: '400px',
-        margin: '50px auto',
+        margin: '0 auto',
         padding: '24px',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',
         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-        fontFamily: 'sans-serif',
         backgroundColor: '#fff',
       }}
     >
-      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#1e293b' }}>
-        {isSignUp ? 'Create New Account' : 'Sign In'}
+      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#000', fontWeight: 900 }}>
+        {deliveryContext
+          ? 'Delivery Sign In'
+          : isSignUp
+            ? 'Create New Account'
+            : 'Sign In'}
       </h2>
 
       {errorMessage && (
@@ -118,6 +129,7 @@ export default function SignUp() {
             marginBottom: '15px',
             fontSize: '14px',
             textAlign: 'center',
+            fontWeight: 700,
           }}
         >
           {errorMessage}
@@ -135,6 +147,7 @@ export default function SignUp() {
             marginBottom: '15px',
             fontSize: '14px',
             textAlign: 'center',
+            fontWeight: 700,
           }}
         >
           {successMessage}
@@ -144,7 +157,7 @@ export default function SignUp() {
       <form onSubmit={handleAuth} noValidate>
         {isSignUp && (
           <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '700' }}>
               Full Name
             </label>
             <input
@@ -167,7 +180,7 @@ export default function SignUp() {
         )}
 
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '700' }}>
             Email Address
           </label>
           <input
@@ -189,7 +202,7 @@ export default function SignUp() {
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '500' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: '700' }}>
             Password
           </label>
           <input
@@ -217,40 +230,49 @@ export default function SignUp() {
           style={{
             width: '100%',
             padding: '12px',
-            backgroundColor: '#c84b1d',
+            backgroundColor: '#FF5500',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',
-            fontWeight: '600',
+            fontWeight: 900,
             cursor: authLoading ? 'not-allowed' : 'pointer',
             opacity: authLoading ? 0.7 : 1,
           }}
         >
-          {authLoading ? 'Submitting...' : isSignUp ? 'Create Account' : 'Sign In'}
+          {authLoading
+            ? 'Submitting...'
+            : isSignUp
+              ? 'Create Account'
+              : deliveryContext
+                ? 'Sign In to Delivery Portal'
+                : 'Sign In'}
         </button>
       </form>
 
-      <button
-        type="button"
-        onClick={() => {
-          setIsSignUp(!isSignUp);
-          resetFeedback();
-        }}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: '#c84b1d',
-          marginTop: '16px',
-          cursor: 'pointer',
-          width: '100%',
-          textAlign: 'center',
-          fontSize: '14px',
-        }}
-      >
-        {isSignUp
-          ? 'Already have an account? Sign in here'
-          : "Don't have an account? Click here to register"}
-      </button>
+      {!hideModeSwitch && (
+        <button
+          type="button"
+          onClick={() => {
+            setIsSignUp(!isSignUp);
+            resetFeedback();
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#FF5500',
+            marginTop: '16px',
+            cursor: 'pointer',
+            width: '100%',
+            textAlign: 'center',
+            fontSize: '14px',
+            fontWeight: 700,
+          }}
+        >
+          {isSignUp
+            ? 'Already have an account? Sign in here'
+            : "Don't have an account? Click here to register"}
+        </button>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import AdminRoute from './components/AdminRoute';
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, loading, isAdmin, authEvent, signOut } = useAuth();
+  const { session, profile, loading, isAdmin, authEvent, signOut } = useAuth();
   const [lang, setLang] = useState('en');
 
   // After login, send admins to /admin; keep buyers on storefront
@@ -21,9 +21,6 @@ export default function App() {
       navigate('/', { replace: true });
     }
   }, [authEvent, isAdmin, loading, navigate, location.pathname]);
-
-  // Existing admin session visiting root stays on storefront unless they open Admin
-  // Non-admin already on /admin is handled by AdminRoute
 
   async function handleSignOut() {
     try {
@@ -61,6 +58,7 @@ export default function App() {
         element={
           <Storefront
             session={session}
+            profile={profile}
             isAdmin={isAdmin}
             lang={lang}
             setLang={setLang}

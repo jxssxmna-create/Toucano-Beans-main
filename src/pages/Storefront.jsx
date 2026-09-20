@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import AccountPage from '../components/AccountPage';
+import AccountSection from '../components/AccountSection';
+import PolicyModal from '../components/PolicyModal';
 import Logo from '../components/Logo';
-import SignUp from './SignUp';
 import Checkout from './Checkout';
 import { fetchProducts } from '../lib/productsApi';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
@@ -96,6 +96,7 @@ function CategoryIcon({ type }) {
 
 export default function Storefront({
   session,
+  profile,
   isAdmin,
   lang,
   setLang,
@@ -110,6 +111,7 @@ export default function Storefront({
   const [cartCount] = useState(0);
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [policyModal, setPolicyModal] = useState(null);
 
   const t = translations[lang];
 
@@ -475,17 +477,14 @@ export default function Storefront({
         )}
 
         {activePage === 'account' && (
-          <section className="w-full max-w-md">
-            {session ? <AccountPage session={session} /> : <SignUp />}
-            {isAdmin && session && (
-              <button
-                type="button"
-                onClick={() => navigate('/admin')}
-                className="mt-4 w-full bg-brandorange text-white font-black py-2.5 rounded-lg"
-              >
-                {t.admin}
-              </button>
-            )}
+          <section className="w-full max-w-lg">
+            <AccountSection
+              session={session}
+              profile={profile}
+              isAdmin={isAdmin}
+              lang={lang}
+              onOpenAdmin={() => navigate('/admin')}
+            />
           </section>
         )}
 
@@ -496,9 +495,30 @@ export default function Storefront({
         )}
       </main>
 
-      <footer className="text-center py-4 text-xs text-black/70 font-bold border-t border-slate-300">
-        © 2026 Toucano Beans. All rights reserved.
+      <footer className="text-center py-4 text-xs text-black/70 font-bold border-t border-slate-300 space-y-2">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4">
+          <button
+            type="button"
+            onClick={() => setPolicyModal('ordering')}
+            className="hover:text-[#FF5500] underline-offset-2 hover:underline font-black"
+          >
+            {lang === 'ar' ? 'قواعد الطلب' : 'Ordering Rules'}
+          </button>
+          <span aria-hidden="true">·</span>
+          <button
+            type="button"
+            onClick={() => setPolicyModal('returns')}
+            className="hover:text-[#FF5500] underline-offset-2 hover:underline font-black"
+          >
+            {lang === 'ar' ? 'سياسة الإرجاع' : 'Return Policy'}
+          </button>
+        </div>
+        <p>© 2026 Toucano Beans. All rights reserved.</p>
       </footer>
+
+      {policyModal && (
+        <PolicyModal type={policyModal} lang={lang} onClose={() => setPolicyModal(null)} />
+      )}
     </div>
   );
 }
