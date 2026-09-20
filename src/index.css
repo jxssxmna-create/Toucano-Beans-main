@@ -12,19 +12,21 @@ body,
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: Didot, 'Didot LT STD', 'Hoefler Text', Garamond, 'Times New Roman', serif;
   background-color: #fdf0de;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
 }
 
+button,
+input,
+textarea,
+select,
+a {
+  font: inherit;
+}
+
 img {
   max-width: 100%;
   height: auto;
-}
-
-button,
-input,
-a {
-  font: inherit;
 }

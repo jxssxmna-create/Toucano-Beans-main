@@ -22,9 +22,9 @@ const translations = {
     account: 'Account',
     checkout: 'Checkout',
     admin: 'Admin Panel',
-    storyTitle: 'Our Story',
+    storyTitle: 'Coffee world under one wing',
     storyBody:
-      'Toucano Beans brings you handcrafted coffee sourced responsibly from premium beans around the world. Our mission is to make exceptional specialty coffee accessible, simple, and enjoyable every single day.',
+      'From the heart of Doha, we gather the finest from around the world under one wing bringing together exceptional coffee and the essentials to brew it',
     contactTitle: 'Contact Us',
     officialEmail: 'Official Email',
     logout: 'Log Out',
@@ -44,9 +44,9 @@ const translations = {
     account: 'الحساب',
     checkout: 'الدفع',
     admin: 'لوحة التحكم',
-    storyTitle: 'قصتنا',
+    storyTitle: 'عالم القهوة تحت جناح واحد',
     storyBody:
-      'يقدم لك توكانو بينز قهوة مصنوعة يدويًا ومستوردة بمسؤولية من أجود حبوب القهوة حول العالم. مهمتنا هي جعل القهوة المختصة الممتازة سهلة وبسيطة وممتعة كل يوم.',
+      'من قلب الدوحة، نجمع لك أجود ما في العالم تحت جناح واحد.. لنجمع بين القهوة الاستثنائية ومستلزمات تحضيرها',
     contactTitle: 'اتصل بنا',
     officialEmail: 'البريد الإلكتروني الرسمي',
     logout: 'تسجيل الخروج',
@@ -60,6 +60,39 @@ const CATEGORY_KEYS = {
   'drip-coffee': 'drip',
   essentials: 'essentials',
 };
+
+function CategoryIcon({ type }) {
+  const common = 'w-14 h-14 text-slate-800 group-hover:text-brandorange transition';
+  if (type === 'coffee-beans') {
+    return (
+      <svg className={common} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
+        <ellipse cx="18" cy="22" rx="9" ry="13" transform="rotate(-28 18 22)" />
+        <path d="M14 16c2 4 3 8 2 13" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
+        <ellipse cx="40" cy="20" rx="9" ry="13" transform="rotate(18 40 20)" />
+        <path d="M37 14c1.5 4 2 8 1 12" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
+        <ellipse cx="30" cy="42" rx="9" ry="13" transform="rotate(-8 30 42)" />
+        <path d="M27 36c1.8 4 2.2 8 1 12" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.35" />
+      </svg>
+    );
+  }
+  if (type === 'drip-coffee') {
+    return (
+      <svg className={common} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
+        <path d="M32 8c0 0 16 18 16 30a16 16 0 1 1-32 0C16 26 32 8 32 8z" />
+        <path d="M32 22c0 6-3 10-3 16" fill="none" stroke="#fdf0de" strokeWidth="2.5" strokeLinecap="round" opacity="0.55" />
+      </svg>
+    );
+  }
+  return (
+    <svg className={common} viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 22h28v18a10 10 0 0 1-10 10H24a10 10 0 0 1-10-10V22z" fill="currentColor" stroke="none" />
+      <path d="M42 26h6a6 6 0 0 1 0 12h-6" />
+      <path d="M12 56h32" />
+      <path d="M22 14c0 0 2-4 6-4s6 4 6 4" opacity="0.7" />
+      <path d="M28 10c0 0 1-3 4-3" opacity="0.5" />
+    </svg>
+  );
+}
 
 export default function Storefront({
   session,
@@ -130,11 +163,13 @@ export default function Storefront({
   };
 
   return (
-    <div className="bg-[#fdf0de] text-slate-900 font-sans min-h-screen flex flex-col justify-between relative">
-      <div className="fixed top-6 left-6 right-6 z-30 flex items-center justify-between pointer-events-none">
+    <div className="bg-[#fdf0de] text-slate-900 min-h-screen flex flex-col justify-between relative">
+      {/* Physical left/right so menu stays top-right in both LTR and RTL */}
+      <div className="fixed top-6 left-6 right-6 z-30 pointer-events-none h-12">
         <button
           onClick={() => navigateTo('checkout')}
-          className="pointer-events-auto relative p-3 text-slate-800 hover:text-brandorange transition focus:outline-none"
+          className="pointer-events-auto absolute left-0 top-0 p-3 text-slate-800 hover:text-brandorange transition focus:outline-none"
+          aria-label="Cart"
         >
           <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -151,7 +186,8 @@ export default function Storefront({
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="pointer-events-auto p-3 text-slate-800 hover:text-brandorange transition focus:outline-none"
+          className="pointer-events-auto absolute right-0 top-0 p-3 text-slate-800 hover:text-brandorange transition focus:outline-none"
+          aria-label="Menu"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -356,6 +392,9 @@ export default function Storefront({
                   onClick={() => navigateTo(cat)}
                   className="group flex flex-col items-center justify-center transition transform hover:-translate-y-1"
                 >
+                  <div className="mb-3 flex items-center justify-center">
+                    <CategoryIcon type={cat} />
+                  </div>
                   <span className="text-lg font-bold text-slate-800 group-hover:text-brandorange transition">
                     {t[CATEGORY_KEYS[cat]]}
                   </span>

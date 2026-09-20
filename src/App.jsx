@@ -35,7 +35,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="bg-[#fdf0de] min-h-screen flex items-center justify-center font-sans text-slate-800">
+      <div className="bg-[#fdf0de] min-h-screen flex items-center justify-center text-slate-800" style={{ fontFamily: 'Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif' }}>
         Loading Toucano Beans...
       </div>
     );
