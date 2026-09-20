@@ -81,22 +81,16 @@ function CategoryIcon({ type }) {
   }
   return (
     <svg className={box} viewBox="0 0 64 64" fill="#000000" aria-hidden="true">
-      <path d="M12 20h32v20c0 6.627-5.373 12-12 12H24c-6.627 0-12-5.373-12-12V20z" />
-      <path d="M44 24h5a8 8 0 1 1 0 16h-5V24z" />
-      <rect x="10" y="54" width="36" height="4" rx="1" />
+      {/* Mug body */}
+      <path d="M10 16h34v26c0 7.732-6.268 14-14 14H24C16.268 56 10 49.732 10 42V16z" />
+      {/* Side handle */}
       <path
-        d="M24 10c1.5-3 4-5 8-5 2 0 3.5.5 5 1.5"
+        d="M44 22h5a11 11 0 0 1 0 22h-5"
         fill="none"
         stroke="#000000"
-        strokeWidth="3"
+        strokeWidth="6"
         strokeLinecap="round"
-      />
-      <path
-        d="M30 6c1-2 2.5-3.5 5-3.5"
-        fill="none"
-        stroke="#000000"
-        strokeWidth="2.5"
-        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
