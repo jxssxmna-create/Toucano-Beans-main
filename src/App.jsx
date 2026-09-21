@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth';
 import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
+import CheckoutPage from './pages/Checkout';
 import AdminRoute from './components/AdminRoute';
 import DeliveryRoute from './components/DeliveryRoute';
 import { pathForAuthView, resolveAuthView } from './lib/adminAuth';
@@ -27,12 +28,6 @@ export default function App() {
     }
   }, [location.state]);
 
-  /**
-   * Route by email domain after getSession (load) and after sign-in:
-   * @admin.com → admin-dashboard (/admin)
-   * @delivery.com → delivery-dashboard (/delivery)
-   * else → customer-dashboard (/)
-   */
   useEffect(() => {
     if (loading) return;
 
@@ -54,12 +49,16 @@ export default function App() {
     const target = pathForAuthView(view);
     const onAdmin = location.pathname.startsWith('/admin');
     const onDelivery = location.pathname.startsWith('/delivery');
+    const onCheckout = location.pathname.startsWith('/checkout');
     const previewOn = sessionStorage.getItem(PREVIEW_KEY) === '1' || buyerPreview;
 
-    // Fresh login or first session restore → assigned dashboard
-    // (skip forcing /admin when admin is in buyer preview on storefront)
     if (authEvent === 'SIGNED_IN' || !hasBootstrappedRoute) {
       if (previewOn && view === 'admin-dashboard' && !onAdmin) {
+        setHasBootstrappedRoute(true);
+        return;
+      }
+      // Allow checkout without bounce on first restore
+      if (onCheckout) {
         setHasBootstrappedRoute(true);
         return;
       }
@@ -70,7 +69,6 @@ export default function App() {
       return;
     }
 
-    // Afterwards: only block wrong protected dashboards
     if (view === 'customer-dashboard' && (onAdmin || onDelivery)) {
       navigate('/', { replace: true });
     } else if (view === 'admin-dashboard' && onDelivery) {
@@ -98,12 +96,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div
-        className="bg-[#fdf0de] min-h-screen flex items-center justify-center text-slate-800"
-        style={{
-          fontFamily: 'Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif',
-        }}
-      >
+      <div className="bg-[#FAF0DF] min-h-screen flex items-center justify-center text-slate-800 font-sans">
         Loading Toucano Beans...
       </div>
     );
@@ -135,6 +128,18 @@ export default function App() {
               onSignOut={handleSignOut}
             />
           </DeliveryRoute>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <CheckoutPage
+            session={session}
+            profile={profile}
+            lang={lang}
+            setLang={setLang}
+            onSignOut={handleSignOut}
+          />
         }
       />
       <Route

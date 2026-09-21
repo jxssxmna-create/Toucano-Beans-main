@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   mapsEmbedUrl,
   mapsLinkFromCoords,
@@ -6,6 +6,7 @@ import {
   validCoords,
 } from '../lib/maps';
 
+/** Lat/lng stay in state only — no Lat/Lng inputs in the UI. */
 export default function LocationPicker({
   lat,
   lng,
@@ -15,35 +16,30 @@ export default function LocationPicker({
 }) {
   const isAr = lang === 'ar';
   const [linkDraft, setLinkDraft] = useState(googleMapLink || '');
-  const [latDraft, setLatDraft] = useState(lat != null ? String(lat) : '');
-  const [lngDraft, setLngDraft] = useState(lng != null ? String(lng) : '');
+  const [coords, setCoords] = useState(() =>
+    validCoords(Number(lat), Number(lng)) ? { lat: Number(lat), lng: Number(lng) } : null
+  );
   const [hint, setHint] = useState('');
 
-  const coords = useMemo(() => {
-    const la = Number(latDraft);
-    const ln = Number(lngDraft);
-    return validCoords(la, ln) ? { lat: la, lng: ln } : null;
-  }, [latDraft, lngDraft]);
+  useEffect(() => {
+    setLinkDraft(googleMapLink || '');
+    if (validCoords(Number(lat), Number(lng))) {
+      setCoords({ lat: Number(lat), lng: Number(lng) });
+    }
+  }, [googleMapLink, lat, lng]);
+
+  const embedSrc = useMemo(
+    () => mapsEmbedUrl(coords?.lat, coords?.lng),
+    [coords]
+  );
 
   function emit(nextLat, nextLng, link) {
+    setCoords({ lat: nextLat, lng: nextLng });
     onChange?.({
       lat: nextLat,
       lng: nextLng,
       google_map_link: link || mapsLinkFromCoords(nextLat, nextLng),
     });
-  }
-
-  function applyCoords() {
-    const la = Number(latDraft);
-    const ln = Number(lngDraft);
-    if (!validCoords(la, ln)) {
-      setHint(isAr ? 'إحداثيات غير صالحة' : 'Invalid coordinates');
-      return;
-    }
-    setHint('');
-    const link = mapsLinkFromCoords(la, ln);
-    setLinkDraft(link);
-    emit(la, ln, link);
   }
 
   function applyLink() {
@@ -53,8 +49,6 @@ export default function LocationPicker({
       return;
     }
     setHint('');
-    setLatDraft(String(parsed.lat));
-    setLngDraft(String(parsed.lng));
     emit(parsed.lat, parsed.lng, linkDraft.trim());
   }
 
@@ -67,8 +61,6 @@ export default function LocationPicker({
       (pos) => {
         const la = Number(pos.coords.latitude.toFixed(6));
         const ln = Number(pos.coords.longitude.toFixed(6));
-        setLatDraft(String(la));
-        setLngDraft(String(ln));
         const link = mapsLinkFromCoords(la, ln);
         setLinkDraft(link);
         setHint('');
@@ -79,9 +71,9 @@ export default function LocationPicker({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 font-sans">
       <div>
-        <label className="block text-xs font-black uppercase text-black/50 mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wide text-black/50 mb-1">
           {isAr ? 'رابط خرائط جوجل' : 'Google Maps link'}
         </label>
         <div className="flex gap-2">
@@ -90,72 +82,42 @@ export default function LocationPicker({
             value={linkDraft}
             onChange={(e) => setLinkDraft(e.target.value)}
             placeholder="https://maps.google.com/..."
-            className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold"
+            className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium"
           />
           <button
             type="button"
             onClick={applyLink}
-            className="px-3 py-2 rounded-lg bg-[#FF5500] text-white text-sm font-black shrink-0"
+            className="px-3 py-2 rounded-lg bg-[#FF5F1F] text-white text-sm font-semibold shrink-0"
           >
             {isAr ? 'تطبيق' : 'Apply'}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-xs font-black uppercase text-black/50 mb-1">Lat</label>
-          <input
-            value={latDraft}
-            onChange={(e) => setLatDraft(e.target.value)}
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold"
-            inputMode="decimal"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-black uppercase text-black/50 mb-1">Lng</label>
-          <input
-            value={lngDraft}
-            onChange={(e) => setLngDraft(e.target.value)}
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold"
-            inputMode="decimal"
-          />
-        </div>
-      </div>
+      <button
+        type="button"
+        onClick={useMyLocation}
+        className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:border-[#FF5F1F]"
+      >
+        {isAr ? 'موقعي الحالي' : 'Use my location'}
+      </button>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={applyCoords}
-          className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-black hover:border-[#FF5500]"
-        >
-          {isAr ? 'تعيين الإحداثيات' : 'Set coordinates'}
-        </button>
-        <button
-          type="button"
-          onClick={useMyLocation}
-          className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-black hover:border-[#FF5500]"
-        >
-          {isAr ? 'موقعي الحالي' : 'Use my location'}
-        </button>
-      </div>
-
-      {hint && <p className="text-xs font-bold text-red-600">{hint}</p>}
+      {hint && <p className="text-xs font-medium text-red-600">{hint}</p>}
 
       <div className="rounded-xl overflow-hidden border border-slate-300 bg-slate-100 aspect-[16/10]">
         <iframe
           title="Google Maps"
-          src={mapsEmbedUrl(coords?.lat, coords?.lng)}
+          src={embedSrc}
           className="w-full h-full border-0"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           allowFullScreen
         />
       </div>
-      <p className="text-[11px] font-bold text-black/45">
+      <p className="text-[11px] font-medium text-black/45">
         {isAr
-          ? 'الصق رابط خرائط جوجل أو أدخل الإحداثيات؛ الخريطة تتزامن فوراً.'
-          : 'Paste a Google Maps link or enter coordinates — the embed stays in sync.'}
+          ? 'الصق رابط خرائط جوجل أو استخدم موقعك؛ الخريطة تتزامن تلقائياً.'
+          : 'Paste a Google Maps link or use your location — the map stays in sync.'}
       </p>
     </div>
   );

@@ -231,9 +231,8 @@ export default function AccountPage({ session, lang = 'en' }) {
 
   return (
     <div className="w-full space-y-6">
-      <h2 className="text-2xl font-black">
-        {isAr ? 'إعدادات الحساب' : 'Account Settings'}{' '}
-        <span className="text-sm text-[#FF5500]">({(profile.role || 'buyer').toUpperCase()})</span>
+      <h2 className="text-2xl font-serif font-black">
+        {isAr ? 'إعدادات الحساب' : 'Account Settings'}
       </h2>
 
       {message && (

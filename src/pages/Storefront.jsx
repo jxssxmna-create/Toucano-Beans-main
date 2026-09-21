@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AccountSection from '../components/AccountSection';
 import PolicyModal from '../components/PolicyModal';
 import ProductDetailModal from '../components/ProductDetailModal';
 import QuantitySelector from '../components/QuantitySelector';
 import RecipesPage from '../components/RecipesPage';
+import CartDrawer from '../components/CartDrawer';
 import Logo from '../components/Logo';
-import Checkout from './Checkout';
 import { fetchProducts } from '../lib/productsApi';
 import { resolveCategoryProducts } from '../lib/productCatalog';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
+import { useCart } from '../context/CartContext';
 
 const PREVIEW_KEY = 'tb_buyer_preview';
 
@@ -116,12 +117,11 @@ export default function Storefront({
   onExitBuyerPreview,
 }) {
   const navigate = useNavigate();
+  const { cartCount, getQty, setQty, openCart } = useCart();
   const [activePage, setActivePage] = useState(openAccount ? 'account' : 'home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
-  /** cart: { [productId]: { qty, product } } */
-  const [cart, setCart] = useState({});
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [policyModal, setPolicyModal] = useState(null);
@@ -129,25 +129,6 @@ export default function Storefront({
 
   const showAdmin = isAdmin && !buyerPreview;
   const t = translations[lang];
-  const cartCount = useMemo(
-    () => Object.values(cart).reduce((sum, entry) => sum + (Number(entry?.qty) || 0), 0),
-    [cart]
-  );
-
-  function getQty(productId) {
-    return Number(cart[productId]?.qty) || 0;
-  }
-
-  function setQty(product, qty) {
-    if (!product?.id) return;
-    const nextQty = Math.max(0, Number(qty) || 0);
-    setCart((prev) => {
-      const next = { ...prev };
-      if (nextQty <= 0) delete next[product.id];
-      else next[product.id] = { qty: nextQty, product };
-      return next;
-    });
-  }
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -203,9 +184,9 @@ export default function Storefront({
   };
 
   return (
-    <div className="bg-[#fdf0de] text-black min-h-screen flex flex-col justify-between relative font-bold">
+    <div className="bg-[#FAF0DF] text-black min-h-screen flex flex-col justify-between relative font-sans">
       {buyerPreview && (
-        <div className="fixed top-0 inset-x-0 z-50 bg-slate-900 text-white text-center text-sm font-black py-2 px-4 flex items-center justify-center gap-3">
+        <div className="fixed top-0 inset-x-0 z-50 bg-slate-900 text-white text-center text-sm font-semibold py-2 px-4 flex items-center justify-center gap-3">
           <span>👁️ {lang === 'ar' ? 'معاينة كمشتري' : 'Viewing site as Buyer'}</span>
           <button
             type="button"
@@ -228,8 +209,8 @@ export default function Storefront({
         }`}
       >
         <button
-          onClick={() => navigateTo('checkout')}
-          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-[#FF5500] transition focus:outline-none"
+          onClick={openCart}
+          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none"
           aria-label="Cart"
         >
           <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
@@ -239,14 +220,14 @@ export default function Storefront({
               d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
             />
           </svg>
-          <span className="absolute -top-1 -right-1 bg-brandorange text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 bg-[#FF5F1F] text-white text-xs font-semibold w-5 h-5 rounded-full flex items-center justify-center">
             {cartCount}
           </span>
         </button>
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="pointer-events-auto absolute right-0 top-0 p-3 text-black hover:text-[#FF5500] transition focus:outline-none"
+          className="pointer-events-auto absolute right-0 top-0 p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none"
           aria-label="Menu"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -258,7 +239,7 @@ export default function Storefront({
       {/* Drawer always right — dir=ltr locks right-0 regardless of page RTL */}
       <div
         dir="ltr"
-        className={`fixed inset-y-0 right-0 w-64 bg-[#fdf0de] border-l border-slate-300/60 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 w-64 bg-[#FAF0DF] border-l border-slate-300/60 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -396,8 +377,11 @@ export default function Storefront({
                 {t.account}
               </button>
               <button
-                onClick={() => navigateTo('checkout')}
-                className="block w-full text-start text-black hover:text-brandorange font-extrabold"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate('/checkout');
+                }}
+                className="block w-full text-start text-black hover:text-brandorange font-semibold"
               >
                 {t.checkout}
               </button>
@@ -432,7 +416,7 @@ export default function Storefront({
       {activePage !== 'home' && (
         <header className="text-center pt-10 pb-4 cursor-pointer" onClick={() => navigateTo('home')}>
           <Logo size="md" className="mx-auto mb-2" />
-          <h1 className="text-xl font-black tracking-wider text-black uppercase">TOUCANO BEANS</h1>
+          <h1 className="text-xl font-serif font-black tracking-wider text-black uppercase">TOUCANO BEANS</h1>
         </header>
       )}
 
@@ -441,7 +425,7 @@ export default function Storefront({
           <section className="w-full max-w-4xl flex flex-col items-center">
             <div className="text-center mb-16 cursor-pointer" onClick={() => navigateTo('home')}>
               <Logo size="xl" className="mx-auto mb-4" />
-              <h1 className="text-3xl sm:text-4xl font-black tracking-wider text-black uppercase">
+              <h1 className="text-3xl sm:text-4xl font-serif font-black tracking-wider text-black uppercase">
                 TOUCANO BEANS
               </h1>
             </div>
@@ -456,7 +440,7 @@ export default function Storefront({
                   <div className="mb-3 flex items-center justify-center text-inherit group-hover:text-[#FF5500] transition-colors">
                     <CategoryIcon type={cat} />
                   </div>
-                  <span className="text-lg font-black text-inherit group-hover:text-[#FF5500] transition-colors">
+                  <span className="text-lg font-semibold text-inherit group-hover:text-[#FF5F1F] transition-colors">
                     {t[CATEGORY_KEYS[cat]]}
                   </span>
                 </button>
@@ -467,7 +451,7 @@ export default function Storefront({
 
         {['coffee-beans', 'drip-coffee', 'essentials'].includes(activePage) && (
           <section className="w-full max-w-5xl">
-            <h2 className="text-3xl font-black text-black mb-8 text-center">
+            <h2 className="text-3xl font-serif font-black text-black mb-8 text-center">
               {t[CATEGORY_KEYS[activePage]]}
             </h2>
             {productsLoading ? (
@@ -491,18 +475,18 @@ export default function Storefront({
                         onError={handleLogoError}
                         className="h-40 w-full object-contain rounded-xl mb-4 bg-orange-50 p-2 pointer-events-none"
                       />
-                      <h3 className="font-black text-black text-lg text-center">{product.name}</h3>
+                      <h3 className="font-serif font-black text-black text-lg text-center">{product.name}</h3>
                       {product.tastingNotes && (
-                        <p className="text-xs text-black/55 mt-1 line-clamp-1 font-bold text-center">
+                        <p className="text-xs text-black/55 mt-1 line-clamp-1 font-medium text-center">
                           {product.tastingNotes}
                         </p>
                       )}
                       {!product.tastingNotes && product.description && (
-                        <p className="text-sm text-black/70 mt-1 line-clamp-2 font-bold text-center">
+                        <p className="text-sm text-black/70 mt-1 line-clamp-2 font-medium text-center">
                           {product.description}
                         </p>
                       )}
-                      <p className="text-brandorange font-black mt-2 text-base text-center">
+                      <p className="text-[#FF5F1F] font-semibold mt-2 text-base text-center">
                         {Number(product.price).toFixed(2)} QAR
                       </p>
                       <div className="mt-4 flex justify-center">
@@ -521,8 +505,8 @@ export default function Storefront({
 
         {activePage === 'story' && (
           <section className="w-full max-w-2xl text-center">
-            <h2 className="text-3xl font-black mb-4 text-black">{t.storyTitle}</h2>
-            <p className="text-black leading-relaxed font-bold">{t.storyBody}</p>
+            <h2 className="text-3xl font-serif font-black mb-4 text-black">{t.storyTitle}</h2>
+            <p className="text-black leading-relaxed font-medium">{t.storyBody}</p>
           </section>
         )}
 
@@ -530,7 +514,7 @@ export default function Storefront({
 
         {activePage === 'contact' && (
           <section className="w-full max-w-md text-center">
-            <h2 className="text-3xl font-black mb-6 text-black">{t.contactTitle}</h2>
+            <h2 className="text-3xl font-serif font-black mb-6 text-black">{t.contactTitle}</h2>
             <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 space-y-6">
               <div>
                 <span className="block text-xs font-black text-black/60 uppercase tracking-wider mb-1">
@@ -573,19 +557,6 @@ export default function Storefront({
             />
           </section>
         )}
-
-        {activePage === 'checkout' && (
-          <section className="w-full max-w-md">
-            <Checkout
-              user={session?.user}
-              profile={profile}
-              cart={cart}
-              onQtyChange={setQty}
-              onOrderPlaced={() => setCart({})}
-              lang={lang}
-            />
-          </section>
-        )}
       </main>
 
       <footer className="text-center py-4 text-xs text-black/70 font-bold border-t border-slate-300 space-y-2">
@@ -593,7 +564,7 @@ export default function Storefront({
           <button
             type="button"
             onClick={() => setPolicyModal('ordering')}
-            className="hover:text-[#FF5500] underline-offset-2 hover:underline font-black"
+            className="hover:text-[#FF5F1F] underline-offset-2 hover:underline font-semibold"
           >
             {lang === 'ar' ? 'قواعد الطلب' : 'Ordering Rules'}
           </button>
@@ -601,7 +572,7 @@ export default function Storefront({
           <button
             type="button"
             onClick={() => setPolicyModal('returns')}
-            className="hover:text-[#FF5500] underline-offset-2 hover:underline font-black"
+            className="hover:text-[#FF5F1F] underline-offset-2 hover:underline font-semibold"
           >
             {lang === 'ar' ? 'سياسة الإرجاع' : 'Return Policy'}
           </button>
@@ -622,6 +593,8 @@ export default function Storefront({
           lang={lang}
         />
       )}
+
+      <CartDrawer lang={lang} />
     </div>
   );
 }
