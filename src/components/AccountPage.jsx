@@ -7,12 +7,33 @@ import {
   validateMapLink,
   normalizePhone,
 } from '../lib/authHelpers';
+import LocationPicker from './LocationPicker';
+import LoyaltyCard from './LoyaltyCard';
+import {
+  deleteSavedAddress,
+  fetchOrders,
+  fetchSavedAddresses,
+  upsertSavedAddress,
+} from '../lib/commerceApi';
+import { formatAddressLine, parseLatLng } from '../lib/maps';
 
-export default function AccountPage({ session }) {
+export default function AccountPage({ session, lang = 'en' }) {
+  const isAr = lang === 'ar';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(EMPTY_PROFILE);
   const [message, setMessage] = useState(null);
+  const [addresses, setAddresses] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [addrForm, setAddrForm] = useState({
+    label: 'Home',
+    building_number: '',
+    street_number: '',
+    zone_number: '',
+    google_map_link: '',
+    lat: null,
+    lng: null,
+  });
 
   const getProfile = useCallback(async () => {
     if (!session?.user) {
@@ -47,7 +68,6 @@ export default function AccountPage({ session }) {
       if (data) {
         setProfile({ ...EMPTY_PROFILE, ...data });
       } else {
-        // Profile missing (legacy user) — create buyer row
         const seed = {
           id: session.user.id,
           email: session.user.email || '',
@@ -62,15 +82,28 @@ export default function AccountPage({ session }) {
           .maybeSingle();
 
         if (insertError) {
-          console.warn('Profile seed failed:', insertError.message);
           setProfile(fallback);
         } else {
           setProfile({ ...EMPTY_PROFILE, ...(inserted || seed) });
         }
       }
+
+      try {
+        const [addrs, ords] = await Promise.all([
+          fetchSavedAddresses(session.user.id),
+          fetchOrders({ userId: session.user.id }),
+        ]);
+        setAddresses(addrs);
+        setOrders(ords);
+      } catch (err) {
+        console.warn(err);
+      }
     } catch (err) {
       console.error('Error fetching profile:', err.message);
-      setMessage({ type: 'error', text: 'Could not load profile. You can still edit and retry save.' });
+      setMessage({
+        type: 'error',
+        text: isAr ? 'تعذر تحميل الملف' : 'Could not load profile. You can still edit and retry save.',
+      });
       setProfile({
         ...EMPTY_PROFILE,
         email: session?.user?.email || '',
@@ -79,7 +112,7 @@ export default function AccountPage({ session }) {
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, isAr]);
 
   useEffect(() => {
     getProfile();
@@ -88,52 +121,33 @@ export default function AccountPage({ session }) {
   async function updateProfile(e) {
     e.preventDefault();
     setMessage(null);
-
     if (!session?.user) return;
 
     const nameErr = validateFullName(profile.full_name);
-    if (nameErr) {
-      setMessage({ type: 'error', text: nameErr });
-      return;
-    }
+    if (nameErr) return setMessage({ type: 'error', text: nameErr });
 
     const phoneErr = validatePhone(profile.phone_number);
-    if (phoneErr) {
-      setMessage({ type: 'error', text: phoneErr });
-      return;
-    }
-
-    if (!(profile.building_number || '').trim() || !(profile.street_number || '').trim() || !(profile.zone_number || '').trim()) {
-      setMessage({ type: 'error', text: 'Building, street, and zone numbers are required for delivery.' });
-      return;
-    }
+    if (phoneErr) return setMessage({ type: 'error', text: phoneErr });
 
     const mapErr = validateMapLink(profile.google_map_link);
-    if (mapErr) {
-      setMessage({ type: 'error', text: mapErr });
-      return;
-    }
+    if (mapErr) return setMessage({ type: 'error', text: mapErr });
 
     if (!isSupabaseConfigured) {
-      setMessage({ type: 'error', text: 'Cannot save — Supabase is not configured.' });
-      return;
+      return setMessage({ type: 'error', text: 'Cannot save — Supabase is not configured.' });
     }
 
     try {
       setSaving(true);
-
       const updates = {
         id: session.user.id,
         email: session.user.email || profile.email || '',
       };
-
       for (const field of PROFILE_UPDATE_FIELDS) {
-        if (field === 'phone_number') {
-          updates.phone_number = normalizePhone(profile.phone_number);
-        } else if (field === 'google_map_link') {
+        if (field === 'phone_number') updates.phone_number = normalizePhone(profile.phone_number);
+        else if (field === 'google_map_link') {
           updates.google_map_link = (profile.google_map_link || '').trim() || null;
         } else {
-          updates[field] = (profile[field] || '').trim();
+          updates[field] = (profile[field] || '').trim() || null;
         }
       }
 
@@ -142,11 +156,9 @@ export default function AccountPage({ session }) {
         .upsert(updates, { onConflict: 'id' })
         .select('*')
         .maybeSingle();
-
       if (error) throw error;
-
       if (data) setProfile({ ...EMPTY_PROFILE, ...data });
-      setMessage({ type: 'success', text: 'Profile and delivery address saved.' });
+      setMessage({ type: 'success', text: isAr ? 'تم الحفظ' : 'Profile saved.' });
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to save profile.' });
     } finally {
@@ -154,172 +166,248 @@ export default function AccountPage({ session }) {
     }
   }
 
-  async function handleSignOut() {
+  async function saveAddress(e) {
+    e.preventDefault();
+    if (!session?.user) return;
+    if (!addrForm.label.trim()) {
+      setMessage({ type: 'error', text: isAr ? 'اسم العنوان مطلوب' : 'Address label is required' });
+      return;
+    }
     try {
-      await supabase.auth.signOut();
+      setSaving(true);
+      const row = await upsertSavedAddress({
+        user_id: session.user.id,
+        label: addrForm.label.trim(),
+        building_number: addrForm.building_number.trim() || null,
+        street_number: addrForm.street_number.trim() || null,
+        zone_number: addrForm.zone_number.trim() || null,
+        google_map_link: addrForm.google_map_link.trim() || null,
+        lat: addrForm.lat,
+        lng: addrForm.lng,
+      });
+      setAddresses((prev) => {
+        const rest = prev.filter((a) => a.id !== row.id);
+        return [row, ...rest];
+      });
+      setAddrForm({
+        label: 'Home',
+        building_number: '',
+        street_number: '',
+        zone_number: '',
+        google_map_link: '',
+        lat: null,
+        lng: null,
+      });
+      setMessage({ type: 'success', text: isAr ? 'تم حفظ العنوان' : 'Address saved' });
     } catch (err) {
-      console.error('Sign out failed:', err);
-      setMessage({ type: 'error', text: 'Sign out failed. Please try again.' });
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeAddress(id) {
+    try {
+      await deleteSavedAddress(id);
+      setAddresses((prev) => prev.filter((a) => a.id !== id));
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
     }
   }
 
   if (!session) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px' }}>
-        <p>Please sign in to view and update your account details and address.</p>
+      <div className="text-center py-10 font-bold">
+        {isAr ? 'سجّل الدخول لعرض حسابك' : 'Please sign in to view your account.'}
       </div>
     );
   }
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '40px' }}>Loading account details...</div>;
+    return <div className="text-center py-10 font-bold">{isAr ? 'جاري التحميل...' : 'Loading...'}</div>;
   }
 
+  const parsedDefault = parseLatLng(profile.google_map_link);
+
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Account Settings ({(profile.role || 'buyer').toUpperCase()})</h2>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          style={{
-            background: '#ef4444',
-            color: '#fff',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Sign Out
-        </button>
-      </div>
+    <div className="w-full space-y-6">
+      <h2 className="text-2xl font-black">
+        {isAr ? 'إعدادات الحساب' : 'Account Settings'}{' '}
+        <span className="text-sm text-[#FF5500]">({(profile.role || 'buyer').toUpperCase()})</span>
+      </h2>
 
       {message && (
         <div
           role={message.type === 'error' ? 'alert' : 'status'}
-          style={{
-            padding: '10px',
-            marginBottom: '16px',
-            borderRadius: '6px',
-            backgroundColor: message.type === 'error' ? '#fee2e2' : '#dcfce7',
-            color: message.type === 'error' ? '#dc2626' : '#166534',
-            fontSize: '14px',
-          }}
+          className={`rounded-lg px-3 py-2 text-sm font-bold ${
+            message.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'
+          }`}
         >
           {message.text}
         </div>
       )}
 
-      <form onSubmit={updateProfile} noValidate>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Email (Read Only)</label>
+      {(profile.role === 'buyer' || !profile.role) && (
+        <LoyaltyCard
+          stamps={profile.loyalty_stamps}
+          vouchers={profile.free_bag_vouchers}
+          lang={lang}
+        />
+      )}
+
+      <form onSubmit={updateProfile} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3" noValidate>
+        <div>
+          <label className="block text-xs font-black uppercase text-black/50 mb-1">Email</label>
           <input
             type="text"
             value={profile.email || session.user.email || ''}
             disabled
-            style={{
-              width: '100%',
-              padding: '8px',
-              backgroundColor: '#f1f5f9',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              boxSizing: 'border-box',
-            }}
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 font-bold"
           />
         </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Full Name</label>
+        <div>
+          <label className="block text-xs font-black uppercase text-black/50 mb-1">
+            {isAr ? 'الاسم الكامل' : 'Full Name'}
+          </label>
           <input
-            type="text"
             value={profile.full_name || ''}
             onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
             required
             disabled={saving}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
           />
         </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Phone Number</label>
+        <div>
+          <label className="block text-xs font-black uppercase text-black/50 mb-1">
+            {isAr ? 'الهاتف' : 'Phone'}
+          </label>
           <input
-            type="tel"
             value={profile.phone_number || ''}
             onChange={(e) => setProfile({ ...profile, phone_number: e.target.value })}
-            placeholder="+97412345678"
             required
             disabled={saving}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
           />
         </div>
 
-        <h3 style={{ marginTop: '25px', marginBottom: '10px' }}>Delivery Address</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Building No.</label>
+        <h3 className="font-black pt-2">{isAr ? 'العنوان الافتراضي' : 'Default Delivery Address'}</h3>
+        <div className="grid grid-cols-3 gap-2">
+          {['building_number', 'street_number', 'zone_number'].map((key) => (
             <input
-              type="text"
-              value={profile.building_number || ''}
-              onChange={(e) => setProfile({ ...profile, building_number: e.target.value })}
-              required
+              key={key}
+              value={profile[key] || ''}
+              onChange={(e) => setProfile({ ...profile, [key]: e.target.value })}
+              placeholder={key.replace('_', ' ')}
               disabled={saving}
-              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+              className="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm font-bold"
             />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Street No.</label>
-            <input
-              type="text"
-              value={profile.street_number || ''}
-              onChange={(e) => setProfile({ ...profile, street_number: e.target.value })}
-              required
-              disabled={saving}
-              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Zone No.</label>
-            <input
-              type="text"
-              value={profile.zone_number || ''}
-              onChange={(e) => setProfile({ ...profile, zone_number: e.target.value })}
-              required
-              disabled={saving}
-              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
-            />
-          </div>
+          ))}
         </div>
 
-        <div style={{ marginTop: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Google Maps Link</label>
-          <input
-            type="url"
-            placeholder="https://maps.google.com/..."
-            value={profile.google_map_link || ''}
-            onChange={(e) => setProfile({ ...profile, google_map_link: e.target.value })}
-            disabled={saving}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
-          />
-        </div>
+        <LocationPicker
+          lang={lang}
+          lat={parsedDefault?.lat}
+          lng={parsedDefault?.lng}
+          googleMapLink={profile.google_map_link || ''}
+          onChange={({ lat, lng, google_map_link }) =>
+            setProfile((p) => ({ ...p, google_map_link, lat, lng }))
+          }
+        />
 
         <button
           type="submit"
           disabled={saving}
-          style={{
-            marginTop: '20px',
-            padding: '10px 20px',
-            backgroundColor: '#10b981',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            opacity: saving ? 0.7 : 1,
-          }}
+          className="w-full bg-emerald-600 text-white font-black py-2.5 rounded-lg disabled:opacity-60"
         >
-          {saving ? 'Saving...' : 'Save Profile'}
+          {saving ? (isAr ? 'جارٍ...' : 'Saving...') : isAr ? 'حفظ الملف' : 'Save Profile'}
         </button>
       </form>
+
+      <form onSubmit={saveAddress} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+        <h3 className="font-black text-lg">
+          {isAr ? 'عناوين محفوظة' : 'Saved Addresses'}
+        </h3>
+        <input
+          value={addrForm.label}
+          onChange={(e) => setAddrForm({ ...addrForm, label: e.target.value })}
+          placeholder={isAr ? 'مثلاً: المنزل، العمل، النادي' : 'Label e.g. Home, Work, Gym'}
+          className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+        />
+        <div className="grid grid-cols-3 gap-2">
+          {['building_number', 'street_number', 'zone_number'].map((key) => (
+            <input
+              key={key}
+              value={addrForm[key]}
+              onChange={(e) => setAddrForm({ ...addrForm, [key]: e.target.value })}
+              placeholder={key.replace('_', ' ')}
+              className="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm font-bold"
+            />
+          ))}
+        </div>
+        <LocationPicker
+          lang={lang}
+          lat={addrForm.lat}
+          lng={addrForm.lng}
+          googleMapLink={addrForm.google_map_link}
+          onChange={({ lat, lng, google_map_link }) =>
+            setAddrForm((f) => ({ ...f, lat, lng, google_map_link }))
+          }
+        />
+        <button
+          type="submit"
+          disabled={saving}
+          className="w-full bg-[#FF5500] text-white font-black py-2.5 rounded-lg"
+        >
+          {isAr ? 'حفظ العنوان' : 'Save Address'}
+        </button>
+
+        <ul className="space-y-2 pt-2">
+          {addresses.map((a) => (
+            <li
+              key={a.id}
+              className="flex items-start justify-between gap-2 border border-slate-200 rounded-xl px-3 py-2"
+            >
+              <div className="min-w-0">
+                <p className="font-black truncate">{a.label}</p>
+                <p className="text-xs font-bold text-black/60">{formatAddressLine(a)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeAddress(a.id)}
+                className="text-red-600 text-xs font-black shrink-0"
+              >
+                {isAr ? 'حذف' : 'Delete'}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </form>
+
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+        <h3 className="font-black text-lg">{isAr ? 'سجل الطلبات' : 'Order History'}</h3>
+        {orders.length === 0 ? (
+          <p className="text-sm font-bold text-black/50">
+            {isAr ? 'لا توجد طلبات بعد' : 'No past orders yet.'}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {orders.map((o) => (
+              <li key={o.id} className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+                <div className="flex justify-between gap-2">
+                  <span className="text-[#FF5500]">{Number(o.total || 0).toFixed(2)} QAR</span>
+                  <span className="capitalize text-black/50">{o.status}</span>
+                </div>
+                <p className="text-xs text-black/50">{new Date(o.created_at).toLocaleString()}</p>
+                {Array.isArray(o.items) && o.items.length > 0 && (
+                  <p className="text-xs mt-1">
+                    {o.items.map((i) => `${i.name} ×${i.qty}`).join(', ')}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

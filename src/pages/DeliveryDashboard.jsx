@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import DeliveryPortal from '../components/DeliveryPortal';
+import DriverProfileForm from '../components/DriverProfileForm';
 import Logo from '../components/Logo';
 
 export default function DeliveryDashboard({ lang, setLang, session, onSignOut }) {
@@ -45,6 +46,7 @@ export default function DeliveryDashboard({ lang, setLang, session, onSignOut })
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
+        <DriverProfileForm session={session} lang={lang} />
         <DeliveryPortal session={session} lang={lang} />
       </main>
     </div>

@@ -14,12 +14,13 @@ export default function AccountSection({
   isAdmin,
   lang = 'en',
   onOpenAdmin,
+  buyerPreview = false,
 }) {
   const [tab, setTab] = useState('login');
   const navigate = useNavigate();
   const isAr = lang === 'ar';
   const isDelivery = isDeliveryUser(session?.user, profile);
-  const admin = isAdmin || isAdminUser(session?.user, profile);
+  const admin = !buyerPreview && (isAdmin || isAdminUser(session?.user, profile));
 
   const tabs = [
     { id: 'login', label: isAr ? 'تسجيل الدخول' : 'Log In' },
@@ -48,7 +49,7 @@ export default function AccountSection({
           </p>
           <p className="font-bold text-sm text-black/70 truncate">{session.user?.email}</p>
 
-          {(admin || isDelivery) && (
+          {(admin || (!buyerPreview && isDelivery)) && (
             <button
               type="button"
               onClick={() => navigate(dashPath)}
@@ -65,7 +66,7 @@ export default function AccountSection({
           )}
         </div>
 
-        <AccountPage session={session} />
+        <AccountPage session={session} lang={lang} />
 
         {admin && onOpenAdmin && (
           <button

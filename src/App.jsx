@@ -8,12 +8,24 @@ import AdminRoute from './components/AdminRoute';
 import DeliveryRoute from './components/DeliveryRoute';
 import { pathForAuthView, resolveAuthView } from './lib/adminAuth';
 
+const PREVIEW_KEY = 'tb_buyer_preview';
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, profile, loading, isAdmin, authEvent, signOut } = useAuth();
   const [lang, setLang] = useState('en');
   const [hasBootstrappedRoute, setHasBootstrappedRoute] = useState(false);
+  const [buyerPreview, setBuyerPreview] = useState(
+    () => sessionStorage.getItem(PREVIEW_KEY) === '1' || Boolean(location.state?.buyerPreview)
+  );
+
+  useEffect(() => {
+    if (location.state?.buyerPreview) {
+      sessionStorage.setItem(PREVIEW_KEY, '1');
+      setBuyerPreview(true);
+    }
+  }, [location.state]);
 
   /**
    * Route by email domain after getSession (load) and after sign-in:
@@ -27,6 +39,8 @@ export default function App() {
     const email = session?.user?.email;
     if (!email) {
       setHasBootstrappedRoute(false);
+      setBuyerPreview(false);
+      sessionStorage.removeItem(PREVIEW_KEY);
       if (
         location.pathname.startsWith('/admin') ||
         location.pathname.startsWith('/delivery')
@@ -40,9 +54,15 @@ export default function App() {
     const target = pathForAuthView(view);
     const onAdmin = location.pathname.startsWith('/admin');
     const onDelivery = location.pathname.startsWith('/delivery');
+    const previewOn = sessionStorage.getItem(PREVIEW_KEY) === '1' || buyerPreview;
 
     // Fresh login or first session restore → assigned dashboard
+    // (skip forcing /admin when admin is in buyer preview on storefront)
     if (authEvent === 'SIGNED_IN' || !hasBootstrappedRoute) {
+      if (previewOn && view === 'admin-dashboard' && !onAdmin) {
+        setHasBootstrappedRoute(true);
+        return;
+      }
       if (location.pathname !== target) {
         navigate(target, { replace: true });
       }
@@ -58,14 +78,22 @@ export default function App() {
     } else if (view === 'delivery-dashboard' && onAdmin) {
       navigate('/delivery', { replace: true });
     }
-  }, [loading, session, authEvent, hasBootstrappedRoute, location.pathname, navigate]);
+  }, [loading, session, authEvent, hasBootstrappedRoute, buyerPreview, location.pathname, navigate]);
 
   async function handleSignOut() {
     try {
+      sessionStorage.removeItem(PREVIEW_KEY);
+      setBuyerPreview(false);
       await signOut();
     } finally {
       navigate('/', { replace: true });
     }
+  }
+
+  function exitBuyerPreview() {
+    sessionStorage.removeItem(PREVIEW_KEY);
+    setBuyerPreview(false);
+    navigate('/admin', { replace: true });
   }
 
   if (loading) {
@@ -120,6 +148,8 @@ export default function App() {
             setLang={setLang}
             onSignOut={handleSignOut}
             openAccount={Boolean(location.state?.openAccount)}
+            buyerPreview={buyerPreview && isAdmin}
+            onExitBuyerPreview={exitBuyerPreview}
           />
         }
       />

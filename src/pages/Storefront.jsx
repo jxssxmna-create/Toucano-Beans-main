@@ -4,12 +4,15 @@ import AccountSection from '../components/AccountSection';
 import PolicyModal from '../components/PolicyModal';
 import ProductDetailModal from '../components/ProductDetailModal';
 import QuantitySelector from '../components/QuantitySelector';
+import RecipesPage from '../components/RecipesPage';
 import Logo from '../components/Logo';
 import Checkout from './Checkout';
 import { fetchProducts } from '../lib/productsApi';
 import { resolveCategoryProducts } from '../lib/productCatalog';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
+
+const PREVIEW_KEY = 'tb_buyer_preview';
 
 const translations = {
   en: {
@@ -20,6 +23,7 @@ const translations = {
     beans: 'Coffee Beans',
     drip: 'Drip Coffee',
     essentials: 'Coffee Essentials',
+    recipes: 'Coffee Recipes',
     language: 'Language',
     contact: 'Contact Us',
     account: 'Account',
@@ -43,6 +47,7 @@ const translations = {
     beans: 'حبوب القهوة',
     drip: 'القهوة المقطرة',
     essentials: 'مستلزمات القهوة',
+    recipes: 'وصفات القهوة',
     language: 'اللغة',
     contact: 'اتصل بنا',
     account: 'الحساب',
@@ -107,6 +112,8 @@ export default function Storefront({
   setLang,
   onSignOut,
   openAccount = false,
+  buyerPreview = false,
+  onExitBuyerPreview,
 }) {
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState(openAccount ? 'account' : 'home');
@@ -120,6 +127,7 @@ export default function Storefront({
   const [policyModal, setPolicyModal] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const showAdmin = isAdmin && !buyerPreview;
   const t = translations[lang];
   const cartCount = useMemo(
     () => Object.values(cart).reduce((sum, entry) => sum + (Number(entry?.qty) || 0), 0),
@@ -196,8 +204,29 @@ export default function Storefront({
 
   return (
     <div className="bg-[#fdf0de] text-black min-h-screen flex flex-col justify-between relative font-bold">
+      {buyerPreview && (
+        <div className="fixed top-0 inset-x-0 z-50 bg-slate-900 text-white text-center text-sm font-black py-2 px-4 flex items-center justify-center gap-3">
+          <span>👁️ {lang === 'ar' ? 'معاينة كمشتري' : 'Viewing site as Buyer'}</span>
+          <button
+            type="button"
+            onClick={() => {
+              sessionStorage.removeItem(PREVIEW_KEY);
+              onExitBuyerPreview?.();
+            }}
+            className="underline underline-offset-2"
+          >
+            {lang === 'ar' ? 'العودة للأدمن' : 'Exit to Admin'}
+          </button>
+        </div>
+      )}
+
       {/* Cart left / Menu right — dir=ltr keeps physical sides in Arabic RTL */}
-      <div dir="ltr" className="fixed top-6 left-6 right-6 z-30 pointer-events-none h-12">
+      <div
+        dir="ltr"
+        className={`fixed left-6 right-6 z-30 pointer-events-none h-12 ${
+          buyerPreview ? 'top-14' : 'top-6'
+        }`}
+      >
         <button
           onClick={() => navigateTo('checkout')}
           className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-[#FF5500] transition focus:outline-none"
@@ -262,6 +291,12 @@ export default function Storefront({
                 className="block w-full text-start text-black hover:text-brandorange font-extrabold"
               >
                 {t.story}
+              </button>
+              <button
+                onClick={() => navigateTo('recipes')}
+                className="block w-full text-start text-black hover:text-brandorange font-extrabold"
+              >
+                {t.recipes}
               </button>
 
               <div>
@@ -367,7 +402,7 @@ export default function Storefront({
                 {t.checkout}
               </button>
 
-              {isAdmin && (
+              {showAdmin && (
                 <Link
                   to="/admin"
                   onClick={() => setIsMenuOpen(false)}
@@ -491,6 +526,8 @@ export default function Storefront({
           </section>
         )}
 
+        {activePage === 'recipes' && <RecipesPage lang={lang} />}
+
         {activePage === 'contact' && (
           <section className="w-full max-w-md text-center">
             <h2 className="text-3xl font-black mb-6 text-black">{t.contactTitle}</h2>
@@ -529,8 +566,9 @@ export default function Storefront({
             <AccountSection
               session={session}
               profile={profile}
-              isAdmin={isAdmin}
+              isAdmin={showAdmin}
               lang={lang}
+              buyerPreview={buyerPreview}
               onOpenAdmin={() => navigate('/admin')}
             />
           </section>
@@ -540,8 +578,10 @@ export default function Storefront({
           <section className="w-full max-w-md">
             <Checkout
               user={session?.user}
+              profile={profile}
               cart={cart}
               onQtyChange={setQty}
+              onOrderPlaced={() => setCart({})}
               lang={lang}
             />
           </section>

@@ -286,7 +286,12 @@ export function catalogByCategory(category) {
 export function resolveCategoryProducts(category, remoteProducts = []) {
   const catalog = catalogByCategory(category);
   const remote = Array.isArray(remoteProducts) ? remoteProducts : [];
-  if (remote.length === 0) return catalog;
+  if (remote.length === 0) {
+    return catalog.map((c) => ({
+      ...c,
+      image_urls: c.image_urls || (c.image_url ? [c.image_url] : []),
+    }));
+  }
 
   const unused = new Map(
     remote.map((p) => [String(p.name || '').toLowerCase(), p])
@@ -295,13 +300,26 @@ export function resolveCategoryProducts(category, remoteProducts = []) {
   const merged = catalog.map((c) => {
     const key = c.name.toLowerCase();
     const r = unused.get(key);
-    if (!r) return c;
+    if (!r) {
+      return {
+        ...c,
+        image_urls: c.image_urls || (c.image_url ? [c.image_url] : []),
+      };
+    }
     unused.delete(key);
+    const urls = [
+      ...(Array.isArray(r.image_urls) ? r.image_urls : []),
+      r.image_url,
+      c.image_url,
+      ...(c.image_urls || []),
+    ].filter(Boolean);
+    const image_urls = [...new Set(urls)];
     return {
       ...c,
       ...r,
       tastingNotes: extractTastingNotes(r) || c.tastingNotes || null,
-      image_url: r.image_url || c.image_url,
+      image_url: image_urls[0] || r.image_url || c.image_url,
+      image_urls,
       description: r.description || c.description,
       price: r.price ?? c.price,
     };
@@ -309,9 +327,14 @@ export function resolveCategoryProducts(category, remoteProducts = []) {
 
   for (const r of unused.values()) {
     if (r.category && r.category !== category) continue;
+    const image_urls = [
+      ...(Array.isArray(r.image_urls) ? r.image_urls : []),
+      r.image_url,
+    ].filter(Boolean);
     merged.push({
       ...r,
       tastingNotes: extractTastingNotes(r),
+      image_urls: [...new Set(image_urls)],
       display_order: r.display_order ?? merged.length,
     });
   }

@@ -22,6 +22,10 @@ export const EMPTY_PROFILE = {
   street_number: '',
   zone_number: '',
   google_map_link: '',
+  vehicle_type: '',
+  vehicle_plate: '',
+  loyalty_stamps: 0,
+  free_bag_vouchers: 0,
   role: 'buyer',
 };
 
@@ -33,4 +37,6 @@ export const PROFILE_UPDATE_FIELDS = [
   'street_number',
   'zone_number',
   'google_map_link',
+  'vehicle_type',
+  'vehicle_plate',
 ];

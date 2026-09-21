@@ -1,10 +1,29 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import QuantitySelector from './QuantitySelector';
 import { extractTastingNotes } from '../lib/productCatalog';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 
+export function productGallery(product) {
+  const urls = [];
+  if (Array.isArray(product?.image_urls)) {
+    for (const u of product.image_urls) {
+      if (u && !urls.includes(u)) urls.push(u);
+    }
+  }
+  if (product?.image_url && !urls.includes(product.image_url)) {
+    urls.unshift(product.image_url);
+  }
+  return urls.length ? urls : [LOGO_SRC];
+}
+
 export default function ProductDetailModal({ product, qty = 0, onQtyChange, onClose, lang = 'en' }) {
   const isAr = lang === 'ar';
+  const gallery = useMemo(() => productGallery(product), [product]);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    setActiveIdx(0);
+  }, [product?.id]);
 
   useEffect(() => {
     function onKey(e) {
@@ -23,6 +42,7 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
 
   const tasting = extractTastingNotes(product);
   const description = String(product.description || '').trim();
+  const active = gallery[Math.min(activeIdx, gallery.length - 1)];
 
   return (
     <div
@@ -49,11 +69,28 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
         </button>
 
         <img
-          src={product.image_url || LOGO_SRC}
+          src={active}
           alt={product.name}
           onError={handleLogoError}
           className="w-full h-56 sm:h-64 object-cover bg-orange-50"
         />
+
+        {gallery.length > 1 && (
+          <div className="flex gap-2 px-4 py-3 overflow-x-auto bg-[#fdf0de]">
+            {gallery.map((url, i) => (
+              <button
+                key={`${url}-${i}`}
+                type="button"
+                onClick={() => setActiveIdx(i)}
+                className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${
+                  i === activeIdx ? 'border-[#FF5500]' : 'border-transparent opacity-80'
+                }`}
+              >
+                <img src={url} alt="" className="w-full h-full object-cover" onError={handleLogoError} />
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="p-5 sm:p-6 space-y-4">
           <div>

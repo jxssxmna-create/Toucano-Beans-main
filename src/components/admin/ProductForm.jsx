@@ -10,16 +10,15 @@ const emptyForm = {
 
 export default function ProductForm({ lang = 'en', onSubmit, submitting }) {
   const [form, setForm] = useState(emptyForm);
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState('');
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [error, setError] = useState('');
-
   const isAr = lang === 'ar';
 
   function onFileChange(e) {
-    const next = e.target.files?.[0];
-    setFile(next || null);
-    setPreview(next ? URL.createObjectURL(next) : '');
+    const next = [...(e.target.files || [])];
+    setFiles(next);
+    setPreviews(next.map((f) => URL.createObjectURL(f)));
   }
 
   async function handleSubmit(e) {
@@ -35,8 +34,8 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting }) {
       setError(isAr ? 'السعر غير صالح' : 'Enter a valid price');
       return;
     }
-    if (!file) {
-      setError(isAr ? 'الصورة مطلوبة' : 'Product image is required');
+    if (!files.length) {
+      setError(isAr ? 'صورة واحدة على الأقل مطلوبة' : 'At least one product image is required');
       return;
     }
 
@@ -46,11 +45,11 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting }) {
         description: form.description.trim(),
         price,
         category: form.category,
-        file,
+        files,
       });
       setForm(emptyForm);
-      setFile(null);
-      setPreview('');
+      setFiles([]);
+      setPreviews([]);
       e.target.reset?.();
     } catch (err) {
       setError(err.message || (isAr ? 'فشل الحفظ' : 'Save failed'));
@@ -135,17 +134,27 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting }) {
 
       <div>
         <label className="block text-xs font-semibold uppercase text-slate-500 mb-1">
-          {isAr ? 'صورة المنتج' : 'Product Image'}
+          {isAr ? 'صور المنتج (معرض)' : 'Product Gallery Images'}
         </label>
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
+          multiple
           onChange={onFileChange}
           disabled={submitting}
           className="w-full text-sm"
         />
-        {preview && (
-          <img src={preview} alt="Preview" className="mt-3 h-32 w-full object-cover rounded-xl border" />
+        {previews.length > 0 && (
+          <div className="mt-3 flex gap-2 overflow-x-auto">
+            {previews.map((src) => (
+              <img
+                key={src}
+                src={src}
+                alt="Preview"
+                className="h-24 w-24 object-cover rounded-xl border shrink-0"
+              />
+            ))}
+          </div>
         )}
       </div>
 
