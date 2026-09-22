@@ -244,13 +244,33 @@ export default function CheckoutPage({
             <span className="font-serif font-black tracking-wide truncate">TOUCANO BEANS</span>
           </Link>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setLang?.(isAr ? 'en' : 'ar')}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-300 font-semibold"
+            <div
+              className="flex items-center rounded-lg border border-slate-300 overflow-hidden text-xs font-semibold"
+              role="group"
+              aria-label="Language"
             >
-              {isAr ? 'English' : 'العربية'}
-            </button>
+              <button
+                type="button"
+                onClick={() => setLang?.('en')}
+                className={`px-2.5 py-2 transition ${
+                  lang === 'en' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
+                }`}
+              >
+                EN
+              </button>
+              <span className="text-slate-300" aria-hidden="true">
+                |
+              </span>
+              <button
+                type="button"
+                onClick={() => setLang?.('ar')}
+                className={`px-2.5 py-2 transition ${
+                  lang === 'ar' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
+                }`}
+              >
+                AR
+              </button>
+            </div>
             <Link
               to="/"
               className="px-3 py-2 text-sm rounded-lg border border-slate-300 font-semibold"

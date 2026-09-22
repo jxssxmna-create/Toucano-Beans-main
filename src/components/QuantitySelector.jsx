@@ -27,16 +27,16 @@ export default function QuantitySelector({
         aria-label="Decrease quantity"
         onClick={(e) => bump(-1, e)}
         disabled={qty <= 0}
-        className={`${pad} rounded-lg border border-slate-300 bg-white font-black text-black hover:border-[#FF5500] hover:text-[#FF5500] disabled:opacity-40 disabled:hover:border-slate-300 disabled:hover:text-black transition`}
+        className={`${pad} rounded-lg border border-slate-300 bg-white font-semibold text-black hover:border-[#FF5F1F] hover:text-[#FF5F1F] disabled:opacity-40 disabled:hover:border-slate-300 disabled:hover:text-black transition`}
       >
         −
       </button>
-      <span className={`${mid} text-center font-black tabular-nums`}>{qty}</span>
+      <span className={`${mid} text-center font-semibold tabular-nums`}>{qty}</span>
       <button
         type="button"
         aria-label="Increase quantity"
         onClick={(e) => bump(1, e)}
-        className={`${pad} rounded-lg border border-slate-300 bg-white font-black text-black hover:border-[#FF5500] hover:text-[#FF5500] transition`}
+        className={`${pad} rounded-lg border border-slate-300 bg-white font-semibold text-black hover:border-[#FF5F1F] hover:text-[#FF5F1F] transition`}
       >
         +
       </button>
