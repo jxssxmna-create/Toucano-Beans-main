@@ -5,6 +5,7 @@ import PolicyModal from '../components/PolicyModal';
 import ProductCard from '../components/ProductCard';
 import RecipesPage from '../components/RecipesPage';
 import CartDrawer from '../components/CartDrawer';
+import HeaderControls from '../components/HeaderControls';
 import Logo from '../components/Logo';
 import { fetchProducts } from '../lib/productsApi';
 import { resolveCategoryProducts } from '../lib/productCatalog';
@@ -26,8 +27,7 @@ const translations = {
     contact: 'Contact Us',
     account: 'Account',
     admin: 'Admin Panel',
-    sloganLine1: 'coffee beans ...',
-    sloganLine2: 'under one wing',
+    slogan: 'coffee beans under one wing',
     storyBody:
       'From the heart of Doha, we gather the finest from around the world under one wing bringing together exceptional coffee and the essentials to brew it',
     contactTitle: 'Contact Us',
@@ -48,8 +48,7 @@ const translations = {
     contact: 'اتصل بنا',
     account: 'الحساب',
     admin: 'لوحة التحكم',
-    sloganLine1: 'حبوب القهوة ...',
-    sloganLine2: 'تحت جناح واحد',
+    slogan: 'حبوب القهوة تحت جناح واحد',
     storyBody:
       'من قلب الدوحة، نجمع لك أجود ما في العالم تحت جناح واحد.. لنجمع بين القهوة الاستثنائية ومستلزمات تحضيرها',
     contactTitle: 'اتصل بنا',
@@ -212,7 +211,7 @@ export default function Storefront({
   const isStory = activePage === 'story';
 
   return (
-    <div className="bg-[#FAF0DF] text-black min-h-screen flex flex-col justify-between relative font-sans text-[17px]">
+    <div className="bg-[#FAF0DF] text-black min-h-screen flex flex-col justify-between relative font-serif text-[17px]">
       {buyerPreview && (
         <div className="fixed top-0 inset-x-0 z-50 bg-slate-900 text-white text-center text-sm font-semibold py-2 px-4 flex items-center justify-center gap-3">
           <span>👁️ {lang === 'ar' ? 'معاينة كمشتري' : 'Viewing site as Buyer'}</span>
@@ -229,7 +228,7 @@ export default function Storefront({
         </div>
       )}
 
-      {/* Cart left · Language + Menu right */}
+      {/* Cart left · Home + Language + Menu right */}
       <div dir="ltr" className={`fixed left-6 right-6 z-30 pointer-events-none h-12 ${topOffset}`}>
         <button
           onClick={openCart}
@@ -248,44 +247,14 @@ export default function Storefront({
           </span>
         </button>
 
-        <div className="pointer-events-auto absolute right-0 top-0 flex items-center gap-1">
-          <div
-            className="flex items-center rounded-lg border border-slate-300/80 bg-white/70 backdrop-blur-sm overflow-hidden text-xs font-semibold"
-            role="group"
-            aria-label="Language"
-          >
-            <button
-              type="button"
-              onClick={() => setLang('en')}
-              className={`px-2.5 py-2 transition ${
-                lang === 'en' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
-              }`}
-            >
-              EN
-            </button>
-            <span className="text-slate-300 select-none" aria-hidden="true">
-              |
-            </span>
-            <button
-              type="button"
-              onClick={() => setLang('ar')}
-              className={`px-2.5 py-2 transition ${
-                lang === 'ar' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
-              }`}
-            >
-              AR
-            </button>
-          </div>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none"
-            aria-label="Menu"
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
+        <HeaderControls
+          lang={lang}
+          setLang={setLang}
+          onHome={() => navigateTo('home')}
+          onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
+          showMenu
+          className="absolute right-0 top-0"
+        />
       </div>
 
       {/* Drawer — right side */}
@@ -418,7 +387,7 @@ export default function Storefront({
       {activePage !== 'home' && !isStory && (
         <header className="text-center pt-14 pb-2 cursor-pointer" onClick={() => navigateTo('home')}>
           <Logo size="md" className="mx-auto mb-1" />
-          <h1 className="text-xl font-serif font-bold tracking-wider text-black uppercase">
+          <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-black uppercase">
             TOUCANO BEANS
           </h1>
         </header>
@@ -431,11 +400,14 @@ export default function Storefront({
       >
         {activePage === 'home' && (
           <section className="w-full max-w-4xl flex flex-col items-center">
-            <div className="text-center mb-12 cursor-pointer" onClick={() => navigateTo('home')}>
+            <div className="text-center mb-10 cursor-pointer" onClick={() => navigateTo('home')}>
               <Logo size="xl" className="mx-auto mb-3" />
-              <h1 className="text-3xl sm:text-4xl font-serif font-bold tracking-wider text-black uppercase">
+              <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-black uppercase">
                 TOUCANO BEANS
               </h1>
+              <p className="mt-3 text-xl md:text-2xl font-serif font-medium text-black/80 italic">
+                {t.slogan}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-16 w-full max-w-3xl px-4 text-center">
@@ -459,7 +431,7 @@ export default function Storefront({
 
         {['coffee-beans', 'drip-coffee', 'essentials'].includes(activePage) && (
           <section className="w-full max-w-5xl">
-            <h2 className="text-3xl font-serif font-bold text-black mb-8 text-center">
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-black mb-8 text-center">
               {t[CATEGORY_KEYS[activePage]]}
             </h2>
             {productsLoading ? (
@@ -490,13 +462,12 @@ export default function Storefront({
           <section className="w-full max-w-xl text-center pt-2">
             <div className="cursor-pointer" onClick={() => navigateTo('home')}>
               <Logo size="lg" className="mx-auto mb-2" />
-              <h1 className="text-2xl font-serif font-bold tracking-wider text-black uppercase mb-3">
+              <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-black uppercase mb-3">
                 TOUCANO BEANS
               </h1>
             </div>
-            <h2 className="font-serif font-bold text-black text-2xl sm:text-3xl leading-snug mb-3">
-              <span className="block">{t.sloganLine1}</span>
-              <span className="block">{t.sloganLine2}</span>
+            <h2 className="font-serif font-medium text-black text-xl md:text-2xl leading-snug mb-3 italic">
+              {t.slogan}
             </h2>
             <p className="text-black leading-relaxed font-medium text-[17px]">{t.storyBody}</p>
           </section>
@@ -506,7 +477,7 @@ export default function Storefront({
 
         {activePage === 'contact' && (
           <section className="w-full max-w-md text-center">
-            <h2 className="text-3xl font-serif font-bold mb-6 text-black">{t.contactTitle}</h2>
+            <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6 text-black">{t.contactTitle}</h2>
             <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 space-y-6">
               <div>
                 <span className="block text-xs font-semibold text-black/60 uppercase tracking-wider mb-1">

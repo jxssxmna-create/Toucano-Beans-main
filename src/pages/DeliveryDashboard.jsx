@@ -1,43 +1,40 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import DeliveryPortal from '../components/DeliveryPortal';
 import DriverProfileForm from '../components/DriverProfileForm';
+import HeaderControls from '../components/HeaderControls';
 import Logo from '../components/Logo';
 
 export default function DeliveryDashboard({ lang, setLang, session, onSignOut }) {
   const isAr = lang === 'ar';
+  const navigate = useNavigate();
 
   return (
-    <div className="bg-[#fdf0de] text-black min-h-screen" dir={isAr ? 'rtl' : 'ltr'}>
-      <header className="border-b border-slate-300/70 bg-[#fdf0de]/90 backdrop-blur sticky top-0 z-20">
+    <div className="bg-[#FAF0DF] text-black min-h-screen font-serif" dir={isAr ? 'rtl' : 'ltr'}>
+      <header className="border-b border-slate-300/70 bg-[#FAF0DF]/90 backdrop-blur sticky top-0 z-20">
         <div className="max-w-3xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Logo size="sm" className="shrink-0" />
             <div className="min-w-0">
-              <p className="text-xs uppercase tracking-wider text-[#FF5500] font-black">
+              <p className="text-xs uppercase tracking-wider text-[#FF5F1F] font-semibold">
                 {isAr ? 'لوحة التوصيل' : 'Delivery Dashboard'}
               </p>
-              <h1 className="text-xl font-black truncate">Toucano Beans</h1>
-              <p className="text-xs text-black/60 font-bold truncate">{session?.user?.email}</p>
+              <h1 className="text-2xl md:text-3xl font-bold truncate uppercase tracking-wide">
+                TOUCANO BEANS
+              </h1>
+              <p className="text-xs text-black/60 font-medium truncate">{session?.user?.email}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setLang(isAr ? 'en' : 'ar')}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-300 hover:bg-white font-black"
-            >
-              {isAr ? 'English' : 'العربية'}
-            </button>
-            <Link
-              to="/"
-              className="px-3 py-2 text-sm rounded-lg border border-slate-300 hover:bg-white font-black"
-            >
-              {isAr ? 'المتجر' : 'Storefront'}
-            </Link>
+            <HeaderControls
+              lang={lang}
+              setLang={setLang}
+              onHome={() => navigate('/')}
+              showMenu={false}
+            />
             <button
               type="button"
               onClick={onSignOut}
-              className="px-3 py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 font-black"
+              className="px-3 py-2 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600 font-semibold"
             >
               {isAr ? 'تسجيل الخروج' : 'Sign Out'}
             </button>

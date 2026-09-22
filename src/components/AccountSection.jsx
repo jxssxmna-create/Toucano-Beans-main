@@ -84,11 +84,6 @@ export default function AccountSection({
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
       <TabBar tabs={tabs} tab={tab} setTab={setTab} />
-      <p className="text-center text-sm font-bold text-black/70 px-2">
-        {isAr
-          ? 'تسجيل موحّد للعملاء والمسؤولين (@admin.com) وسائقي التوصيل (@delivery.com)'
-          : 'One login for customers, admins (@admin.com), and drivers (@delivery.com)'}
-      </p>
       <SignUp
         key={tab}
         initialMode={tab === 'signup' ? 'signup' : 'login'}

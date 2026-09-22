@@ -96,7 +96,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="bg-[#FAF0DF] min-h-screen flex items-center justify-center text-slate-800 font-sans">
+      <div className="bg-[#FAF0DF] min-h-screen flex items-center justify-center text-slate-800 font-serif">
         Loading Toucano Beans...
       </div>
     );

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ProductForm from '../components/admin/ProductForm';
 import ProductList from '../components/admin/ProductList';
 import SalesAnalytics from '../components/admin/SalesAnalytics';
 import UserManager from '../components/admin/UserManager';
 import RecipeManager from '../components/admin/RecipeManager';
+import HeaderControls from '../components/HeaderControls';
 import Logo from '../components/Logo';
 import { fetchOrders } from '../lib/commerceApi';
 import {
@@ -138,8 +139,8 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
   ];
 
   return (
-    <div className="bg-[#fdf0de] text-slate-900 min-h-screen" dir={isAr ? 'rtl' : 'ltr'}>
-      <header className="border-b border-slate-300/70 bg-[#fdf0de]/80 backdrop-blur sticky top-0 z-20">
+    <div className="bg-[#FAF0DF] text-slate-900 min-h-screen font-serif" dir={isAr ? 'rtl' : 'ltr'}>
+      <header className="border-b border-slate-300/70 bg-[#FAF0DF]/80 backdrop-blur sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Logo size="sm" className="shrink-0" />
@@ -147,7 +148,9 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
               <p className="text-xs uppercase tracking-wider text-brandorange font-bold">
                 {isAr ? 'لوحة التحكم' : 'Admin Panel'}
               </p>
-              <h1 className="text-2xl font-extrabold text-slate-900 truncate">Toucano Beans</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 truncate uppercase tracking-wide">
+                TOUCANO BEANS
+              </h1>
               <p className="text-xs text-slate-500 truncate">{session?.user?.email}</p>
             </div>
           </div>
@@ -155,23 +158,16 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
             <button
               type="button"
               onClick={enterBuyerPreview}
-              className="px-3 py-2 text-sm rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-black"
+              className="px-3 py-2 text-sm rounded-lg bg-slate-900 text-white hover:bg-slate-800 font-semibold"
             >
               👁️ {isAr ? 'عرض كمشتري' : 'View Site as Buyer'}
             </button>
-            <button
-              type="button"
-              onClick={() => setLang(isAr ? 'en' : 'ar')}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-300 hover:bg-white"
-            >
-              {isAr ? 'English' : 'العربية'}
-            </button>
-            <Link
-              to="/"
-              className="px-3 py-2 text-sm rounded-lg border border-slate-300 hover:bg-white font-medium"
-            >
-              {isAr ? 'المتجر' : 'Storefront'}
-            </Link>
+            <HeaderControls
+              lang={lang}
+              setLang={setLang}
+              onHome={() => navigate('/')}
+              showMenu={false}
+            />
             <button
               type="button"
               onClick={onSignOut}

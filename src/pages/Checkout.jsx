@@ -4,6 +4,7 @@ import VerifyModal from '../components/VerifyModal';
 import QuantitySelector from '../components/QuantitySelector';
 import LocationPicker from '../components/LocationPicker';
 import Logo from '../components/Logo';
+import HeaderControls from '../components/HeaderControls';
 import { useCart } from '../context/CartContext';
 import {
   applyLoyaltyStamp,
@@ -236,48 +237,21 @@ export default function CheckoutPage({
   }
 
   return (
-    <div className="bg-[#FAF0DF] text-black min-h-screen font-sans" dir={isAr ? 'rtl' : 'ltr'}>
+    <div className="bg-[#FAF0DF] text-black min-h-screen font-serif" dir={isAr ? 'rtl' : 'ltr'}>
       <header className="border-b border-slate-300/70 bg-[#FAF0DF]/95 sticky top-0 z-20">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <Logo size="sm" className="shrink-0" />
-            <span className="font-serif font-black tracking-wide truncate">TOUCANO BEANS</span>
+            <span className="text-xl md:text-2xl font-serif font-bold tracking-wide truncate uppercase">
+              TOUCANO BEANS
+            </span>
           </Link>
-          <div className="flex items-center gap-2">
-            <div
-              className="flex items-center rounded-lg border border-slate-300 overflow-hidden text-xs font-semibold"
-              role="group"
-              aria-label="Language"
-            >
-              <button
-                type="button"
-                onClick={() => setLang?.('en')}
-                className={`px-2.5 py-2 transition ${
-                  lang === 'en' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
-                }`}
-              >
-                EN
-              </button>
-              <span className="text-slate-300" aria-hidden="true">
-                |
-              </span>
-              <button
-                type="button"
-                onClick={() => setLang?.('ar')}
-                className={`px-2.5 py-2 transition ${
-                  lang === 'ar' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
-                }`}
-              >
-                AR
-              </button>
-            </div>
-            <Link
-              to="/"
-              className="px-3 py-2 text-sm rounded-lg border border-slate-300 font-semibold"
-            >
-              {isAr ? 'المتجر' : 'Shop'}
-            </Link>
-          </div>
+          <HeaderControls
+            lang={lang}
+            setLang={setLang}
+            onHome={() => navigate('/')}
+            showMenu={false}
+          />
         </div>
       </header>
 

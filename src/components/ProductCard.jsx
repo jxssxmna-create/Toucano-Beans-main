@@ -75,7 +75,7 @@ export default function ProductCard({
               <p className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1">
                 {isAr ? 'التفاصيل والتحميص' : 'Description & Roast Details'}
               </p>
-              <pre className="whitespace-pre-wrap font-sans text-[15px] font-medium text-black/80 leading-relaxed">
+              <pre className="whitespace-pre-wrap font-serif text-[15px] font-medium text-black/80 leading-relaxed">
                 {description}
               </pre>
             </div>
