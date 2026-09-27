@@ -162,6 +162,13 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
             >
               👁️ {isAr ? 'عرض كمشتري' : 'View Site as Buyer'}
             </button>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/knowledge')}
+              className="px-3 py-2 text-sm rounded-lg bg-[#FF5F1F] text-white hover:bg-[#e8521a] font-semibold"
+            >
+              🦜 {isAr ? 'معرفة الباريستا' : 'AI Knowledge Base'}
+            </button>
             <HeaderControls
               lang={lang}
               setLang={setLang}

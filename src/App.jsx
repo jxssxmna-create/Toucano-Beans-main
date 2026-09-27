@@ -5,7 +5,9 @@ import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
 import CheckoutPage from './pages/Checkout';
+import KnowledgeBase from './pages/admin/KnowledgeBase';
 import AdminRoute from './components/AdminRoute';
+import AIChatbot from './components/AIChatbot';
 import DeliveryRoute from './components/DeliveryRoute';
 import { pathForAuthView, resolveAuthView } from './lib/adminAuth';
 
@@ -62,7 +64,9 @@ export default function App() {
         setHasBootstrappedRoute(true);
         return;
       }
-      if (location.pathname !== target) {
+      const onTarget =
+        target === '/' ? location.pathname === '/' : location.pathname.startsWith(target);
+      if (!onTarget) {
         navigate(target, { replace: true });
       }
       setHasBootstrappedRoute(true);
@@ -102,8 +106,20 @@ export default function App() {
     );
   }
 
+  const showChatbot =
+    !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/delivery');
+
   return (
+    <>
     <Routes>
+      <Route
+        path="/admin/knowledge"
+        element={
+          <AdminRoute isAdmin={isAdmin} loading={loading} session={session}>
+            <KnowledgeBase lang={lang} setLang={setLang} session={session} onSignOut={handleSignOut} />
+          </AdminRoute>
+        }
+      />
       <Route
         path="/admin/*"
         element={
@@ -159,5 +175,7 @@ export default function App() {
         }
       />
     </Routes>
+    {showChatbot && <AIChatbot lang={lang} />}
+    </>
   );
 }

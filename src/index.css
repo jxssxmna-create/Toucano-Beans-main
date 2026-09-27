@@ -49,6 +49,11 @@ pre,
   font-synthesis: none;
 }
 
+.tb-chat,
+.tb-chat * {
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
 img {
   max-width: 100%;
   height: auto;

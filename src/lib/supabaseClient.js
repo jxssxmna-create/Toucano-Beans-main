@@ -24,6 +24,9 @@ if (!isSupabaseConfigured) {
 const clientUrl = isSupabaseConfigured ? supabaseUrl : 'https://placeholder.supabase.co';
 const clientKey = isSupabaseConfigured ? supabaseAnonKey : 'public-anon-key';
 
+export const SUPABASE_URL = clientUrl;
+export const SUPABASE_ANON_KEY = clientKey;
+
 export const supabase = createClient(clientUrl, clientKey, {
   auth: {
     persistSession: isSupabaseConfigured,
