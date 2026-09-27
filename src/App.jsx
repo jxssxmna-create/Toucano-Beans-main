@@ -175,7 +175,7 @@ export default function App() {
         }
       />
     </Routes>
-    {showChatbot && <AIChatbot lang={lang} />}
+    {showChatbot && <AIChatbot lang={lang} userId={session?.user?.id ?? null} />}
     </>
   );
 }

@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { streamBaristaReply } from '../lib/aiBaristaApi';
+import { fetchChatHistory, streamBaristaReply } from '../lib/aiBaristaApi';
 
 const COPY = {
   en: {
     title: 'Toucano AI Barista',
     subtitle: 'Beans · Brewing · Gear',
-    greeting:
-      "Hello! I'm your Toucano AI Barista 🦜☕ How can I help you pick beans or set up your coffee brew today?",
+    greeting: "Hello! I'm your Toucano AI Barista. How can I help you today?",
     suggestions: [
       'What do I need for a V60 setup?',
       'Recommend beans for fruity notes',
@@ -21,11 +20,11 @@ const COPY = {
   ar: {
     title: 'باريستا توكانو الذكي',
     subtitle: 'حبوب · تحضير · أدوات',
-    greeting: 'مرحباً! أنا باريستا توكانو الذكي 🦜☕ كيف أساعدك في اختيار الحبوب أو تجهيز قهوتك اليوم؟',
+    greeting: 'هلا والله! أنا باريستا توكانو الذكي. شنو بخاطرك اليوم؟',
     suggestions: [
-      'ماذا أحتاج لتحضير V60؟',
-      'اقترح حبوباً بنكهات فاكهية',
-      'اقترح حبوباً بنكهات الشوكولاتة',
+      'شنو أحتاج عشان أسوي V60؟',
+      'أبي حبوب نكهتها فواكه',
+      'أبي حبوب نكهتها شوكولاتة',
     ],
     placeholder: 'اسأل عن الحبوب أو التحضير…',
     send: 'إرسال',
@@ -62,7 +61,7 @@ function renderRich(text) {
   ));
 }
 
-export default function AIChatbot({ lang = 'en' }) {
+export default function AIChatbot({ lang = 'en', userId = null }) {
   const t = COPY[lang] || COPY.en;
   const isAr = lang === 'ar';
   const [open, setOpen] = useState(false);
@@ -83,6 +82,21 @@ export default function AIChatbot({ lang = 'en' }) {
   }, [open]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
+
+  useEffect(() => {
+    abortRef.current?.abort();
+    setMessages([]);
+    if (!userId) return undefined;
+    let cancelled = false;
+    fetchChatHistory(userId)
+      .then((history) => {
+        if (!cancelled) setMessages((prev) => (prev.length ? prev : history));
+      })
+      .catch((err) => console.error('[AIChatbot] history', err));
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   async function send(text) {
     const content = text.trim();

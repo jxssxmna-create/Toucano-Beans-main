@@ -39,6 +39,17 @@ export async function streamBaristaReply({ messages, lang, onChunk, signal }) {
   return full;
 }
 
+export async function fetchChatHistory(userId, limit = 30) {
+  const { data, error } = await supabase
+    .from('chat_logs')
+    .select('role, message, timestamp')
+    .eq('user_id', userId)
+    .order('timestamp', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data || []).reverse().map((r) => ({ role: r.role, content: r.message }));
+}
+
 export async function fetchKnowledge() {
   const { data, error } = await supabase
     .from('ai_knowledge_base')
