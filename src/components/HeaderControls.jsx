@@ -1,6 +1,6 @@
 /**
  * Top-right controls: Home · EN|AR · optional Menu (hamburger).
- * Home routes to `/` and/or calls onHome for in-app storefront pages.
+ * `stackOnMobile` stacks Menu → Home → Language vertically below `sm`.
  */
 export default function HeaderControls({
   lang = 'en',
@@ -8,17 +8,24 @@ export default function HeaderControls({
   onHome,
   onMenuToggle,
   showMenu = true,
+  stackOnMobile = false,
   className = '',
 }) {
+  const layout = stackOnMobile
+    ? 'flex flex-col items-end gap-1 sm:flex-row sm:items-center'
+    : 'flex items-center gap-1';
+
   return (
-    <div className={`pointer-events-auto flex items-center gap-1 ${className}`}>
+    <div className={`pointer-events-auto ${layout} ${className}`}>
       <button
         type="button"
         onClick={() => {
           if (onHome) onHome();
           else window.location.assign('/');
         }}
-        className="p-2.5 text-black hover:text-[#FF5F1F] transition focus:outline-none rounded-lg"
+        className={`p-2.5 text-black hover:text-[#FF5F1F] transition focus:outline-none rounded-lg ${
+          stackOnMobile ? 'order-2 sm:order-1' : ''
+        }`}
         aria-label={lang === 'ar' ? 'الرئيسية' : 'Home'}
         title={lang === 'ar' ? 'الرئيسية' : 'Home'}
       >
@@ -39,7 +46,9 @@ export default function HeaderControls({
       </button>
 
       <div
-        className="flex items-center rounded-lg border border-slate-300/80 bg-white/70 backdrop-blur-sm overflow-hidden text-xs font-semibold"
+        className={`flex items-center rounded-lg border border-slate-300/80 bg-white/70 backdrop-blur-sm overflow-hidden text-xs font-semibold ${
+          stackOnMobile ? 'order-3 sm:order-2' : ''
+        }`}
         role="group"
         aria-label="Language"
       >
@@ -70,7 +79,9 @@ export default function HeaderControls({
         <button
           type="button"
           onClick={onMenuToggle}
-          className="p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none"
+          className={`p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none ${
+            stackOnMobile ? 'order-1 sm:order-3' : ''
+          }`}
           aria-label="Menu"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

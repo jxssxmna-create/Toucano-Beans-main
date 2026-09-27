@@ -43,7 +43,7 @@ export default function RecipesPage({ lang = 'en' }) {
 
   return (
     <section className="w-full max-w-4xl">
-      <h2 className="text-3xl sm:text-4xl font-black text-black mb-2 text-center">
+      <h2 className="text-2xl md:text-4xl font-serif font-bold text-black mb-2 text-center">
         {isAr ? 'وصفات القهوة' : 'Coffee Recipes'}
       </h2>
       <p className="text-center text-black/60 font-bold mb-8">

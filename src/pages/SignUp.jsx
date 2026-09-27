@@ -101,8 +101,10 @@ export default function SignUp({
   return (
     <div
       style={{
-        maxWidth: '400px',
+        width: '100%',
+        maxWidth: '28rem',
         margin: '0 auto',
+        boxSizing: 'border-box',
         padding: '24px',
         border: '1px solid #e2e8f0',
         borderRadius: '12px',

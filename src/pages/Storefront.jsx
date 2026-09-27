@@ -27,7 +27,7 @@ const translations = {
     contact: 'Contact Us',
     account: 'Account',
     admin: 'Admin Panel',
-    slogan: 'coffee beans under one wing',
+    slogan: 'coffee world under one wing',
     storyBody:
       'From the heart of Doha, we gather the finest from around the world under one wing bringing together exceptional coffee and the essentials to brew it',
     contactTitle: 'Contact Us',
@@ -48,7 +48,7 @@ const translations = {
     contact: 'اتصل بنا',
     account: 'الحساب',
     admin: 'لوحة التحكم',
-    slogan: 'حبوب القهوة تحت جناح واحد',
+    slogan: 'عالم القهوة تحت جناح واحد',
     storyBody:
       'من قلب الدوحة، نجمع لك أجود ما في العالم تحت جناح واحد.. لنجمع بين القهوة الاستثنائية ومستلزمات تحضيرها',
     contactTitle: 'اتصل بنا',
@@ -146,8 +146,16 @@ export default function Storefront({
   const [productsLoading, setProductsLoading] = useState(false);
   const [policyModal, setPolicyModal] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const showAdmin = isAdmin && !buyerPreview;
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const t = translations[lang];
 
   useEffect(() => {
@@ -209,6 +217,26 @@ export default function Storefront({
 
   const topOffset = buyerPreview ? 'top-14' : 'top-6';
   const isStory = activePage === 'story';
+  const showStickyBar = activePage !== 'home' && scrolled;
+
+  const cartButton = (className) => (
+    <button
+      onClick={openCart}
+      className={`pointer-events-auto relative p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none ${className}`}
+      aria-label="Cart"
+    >
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+        />
+      </svg>
+      <span className="absolute top-0.5 right-0.5 bg-[#FF5F1F] text-white text-xs font-semibold w-5 h-5 rounded-full flex items-center justify-center">
+        {cartCount}
+      </span>
+    </button>
+  );
 
   return (
     <div className="bg-[#FAF0DF] text-black min-h-screen flex flex-col justify-between relative font-serif text-[17px]">
@@ -228,34 +256,53 @@ export default function Storefront({
         </div>
       )}
 
-      {/* Cart left · Home + Language + Menu right */}
-      <div dir="ltr" className={`fixed left-6 right-6 z-30 pointer-events-none h-12 ${topOffset}`}>
-        <button
-          onClick={openCart}
-          className="pointer-events-auto absolute left-0 top-0 p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none"
-          aria-label="Cart"
-        >
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          <span className="absolute -top-1 -right-1 bg-[#FF5F1F] text-white text-xs font-semibold w-5 h-5 rounded-full flex items-center justify-center">
-            {cartCount}
-          </span>
-        </button>
+      {/* Floating controls: Cart left · Menu/Home/Language right (stacked on mobile) */}
+      {!showStickyBar && (
+        <div dir="ltr" className={`fixed left-6 right-6 z-30 pointer-events-none h-12 ${topOffset}`}>
+          {cartButton('absolute left-0 top-0')}
+          <HeaderControls
+            lang={lang}
+            setLang={setLang}
+            onHome={() => navigateTo('home')}
+            onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
+            showMenu
+            stackOnMobile
+            className="absolute right-0 top-0"
+          />
+        </div>
+      )}
 
-        <HeaderControls
-          lang={lang}
-          setLang={setLang}
-          onHome={() => navigateTo('home')}
-          onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
-          showMenu
-          className="absolute right-0 top-0"
-        />
-      </div>
+      {/* Sticky bar on sub-pages after scrolling */}
+      {showStickyBar && (
+        <div
+          dir="ltr"
+          className={`fixed inset-x-0 z-50 bg-[#FAF0DF]/95 backdrop-blur-sm shadow-sm ${
+            buyerPreview ? 'top-9' : 'top-0'
+          }`}
+        >
+          <div className="max-w-6xl mx-auto px-2 sm:px-4 h-16 flex items-center gap-1 sm:gap-3">
+            {cartButton('shrink-0')}
+            <button
+              type="button"
+              onClick={() => navigateTo('home')}
+              className="flex items-center gap-2 min-w-0 flex-1 justify-center"
+            >
+              <Logo size="xs" decorative className="shrink-0" />
+              <span className="text-sm sm:text-lg font-bold tracking-wider uppercase truncate">
+                TOUCANO BEANS
+              </span>
+            </button>
+            <HeaderControls
+              lang={lang}
+              setLang={setLang}
+              onHome={() => navigateTo('home')}
+              onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
+              showMenu
+              className="shrink-0"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Drawer — right side */}
       <div
@@ -385,7 +432,7 @@ export default function Storefront({
 
       {/* Compact brand header on non-home / non-story pages */}
       {activePage !== 'home' && !isStory && (
-        <header className="text-center pt-14 pb-2 cursor-pointer" onClick={() => navigateTo('home')}>
+        <header className="text-center pt-28 sm:pt-14 pb-2 cursor-pointer" onClick={() => navigateTo('home')}>
           <Logo size="md" className="mx-auto mb-1" />
           <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-wider text-black uppercase">
             TOUCANO BEANS
@@ -395,7 +442,7 @@ export default function Storefront({
 
       <main
         className={`flex-grow flex flex-col items-center px-4 pb-12 ${
-          isStory ? 'justify-start pt-16' : activePage === 'home' ? 'justify-center pt-16' : 'justify-start pt-6'
+          isStory ? 'justify-start pt-16' : activePage === 'home' ? 'justify-center pt-28 sm:pt-16' : 'justify-start pt-6'
         }`}
       >
         {activePage === 'home' && (
@@ -466,7 +513,7 @@ export default function Storefront({
                 TOUCANO BEANS
               </h1>
             </div>
-            <h2 className="font-serif font-medium text-black text-xl md:text-2xl leading-snug mb-3 italic">
+            <h2 className="font-serif font-bold text-black text-xl md:text-2xl leading-snug mb-3">
               {t.slogan}
             </h2>
             <p className="text-black leading-relaxed font-medium text-[17px]">{t.storyBody}</p>
