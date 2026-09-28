@@ -44,7 +44,7 @@ export default function EmployeeProfile({ session, profile, lang = 'en', setLang
   const label = 'block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1';
 
   return (
-    <div className="bg-[#FAF0DF] min-h-screen text-slate-900 font-serif" dir={isAr ? 'rtl' : 'ltr'}>
+    <div className="bg-[#FAF0DF] min-h-screen text-slate-900 font-serif" dir="ltr">
       <header className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Logo size="sm" className="shrink-0" />

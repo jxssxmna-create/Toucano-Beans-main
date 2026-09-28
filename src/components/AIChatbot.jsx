@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchChatHistory, streamBaristaReply } from '../lib/aiBaristaApi';
+import { enforceBrand } from '../lib/i18n';
 
 const COPY = {
   en: {
@@ -171,7 +172,7 @@ export default function AIChatbot({ lang = 'en', userId = null }) {
   const busy = thinking || streaming;
 
   return (
-    <div dir={isAr ? 'rtl' : 'ltr'} className="tb-chat">
+    <div dir="ltr" className="tb-chat">
       <div
         className={`fixed bottom-24 right-4 sm:right-6 z-40 w-[calc(100vw-2rem)] sm:w-[380px] h-[min(560px,calc(100vh-8rem))] flex flex-col rounded-2xl overflow-hidden border border-black/10 bg-[#FAF0DF] shadow-2xl origin-bottom-right transition-all duration-300 ${
           open ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95 pointer-events-none'
@@ -202,7 +203,7 @@ export default function AIChatbot({ lang = 'en', userId = null }) {
         </header>
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3 text-[15px] leading-relaxed">
-          <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white border border-black/5 px-3.5 py-2.5 text-black shadow-sm">
+          <div dir={isAr ? 'rtl' : 'ltr'} className="max-w-[85%] rounded-2xl rounded-tl-sm bg-white border border-black/5 px-3.5 py-2.5 text-black shadow-sm text-left">
             {t.greeting}
           </div>
 
@@ -224,18 +225,19 @@ export default function AIChatbot({ lang = 'en', userId = null }) {
           {messages.map((m, i) =>
             m.role === 'user' ? (
               <div key={i} className="flex justify-end">
-                <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[#FF5F1F] text-white px-3.5 py-2.5 whitespace-pre-wrap break-words">
+                <div dir="auto" className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[#FF5F1F] text-white px-3.5 py-2.5 whitespace-pre-wrap break-words text-left">
                   {m.content}
                 </div>
               </div>
             ) : (
               <div
                 key={i}
-                className={`max-w-[85%] rounded-2xl rounded-tl-sm px-3.5 py-2.5 shadow-sm break-words ${
+                dir="auto"
+                className={`max-w-[85%] rounded-2xl rounded-tl-sm px-3.5 py-2.5 shadow-sm break-words text-left ${
                   m.error ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-white text-black border border-black/5'
                 }`}
               >
-                {renderRich(m.content)}
+                {renderRich(enforceBrand(m.content, lang))}
               </div>
             )
           )}
@@ -265,8 +267,9 @@ export default function AIChatbot({ lang = 'en', userId = null }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t.placeholder}
+            dir={isAr ? 'rtl' : 'ltr'}
             maxLength={1000}
-            className="flex-1 min-w-0 rounded-full border border-black/15 bg-white px-4 py-2.5 text-[15px] text-black outline-none focus:border-[#FF5F1F]"
+            className="flex-1 min-w-0 rounded-full border border-black/15 bg-white px-4 py-2.5 text-[15px] text-black outline-none focus:border-[#FF5F1F] text-left"
           />
           <button
             type="submit"

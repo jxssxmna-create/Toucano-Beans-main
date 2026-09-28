@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import QuantitySelector from './QuantitySelector';
-import { extractTastingNotes } from '../lib/productCatalog';
+import { productDescription, productName, productTastingNotes, textDir } from '../lib/i18n';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 
 export function productGallery(product) {
@@ -40,16 +40,20 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
 
   if (!product) return null;
 
-  const tasting = extractTastingNotes(product);
-  const description = String(product.description || '').trim();
+  const dir = textDir(lang);
+  const name = productName(product, lang);
+  const tasting = productTastingNotes(product, lang);
+  const description = String(productDescription(product, lang)).trim();
+  const weight = product.weight?.trim();
   const active = gallery[Math.min(activeIdx, gallery.length - 1)];
 
   return (
     <div
+      dir="ltr"
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label={product.name}
+      aria-label={name}
     >
       <button
         type="button"
@@ -62,7 +66,7 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 end-3 z-10 w-10 h-10 rounded-full bg-white/90 border border-slate-200 font-black text-black hover:text-[#FF5500]"
+          className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 border border-slate-200 font-black text-black hover:text-[#FF5500]"
           aria-label={isAr ? 'إغلاق' : 'Close'}
         >
           ×
@@ -70,7 +74,7 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
 
         <img
           src={active}
-          alt={product.name}
+          alt={name}
           onError={handleLogoError}
           className="w-full h-56 sm:h-64 object-cover bg-orange-50"
         />
@@ -93,28 +97,41 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
         )}
 
         <div className="p-5 sm:p-6 space-y-4">
-          <div>
-            <h2 className="text-2xl font-black text-black">{product.name}</h2>
-            <p className="text-[#FF5500] font-black text-xl mt-1">
+          <div className="text-center">
+            <h2 dir={dir} className="text-2xl font-black text-black text-center">{name}</h2>
+            <div className="mt-1 h-6 flex items-center justify-center">
+              {weight && (
+                <span
+                  dir="ltr"
+                  className="text-xs font-semibold leading-none text-black/70 bg-white border border-black/10 rounded-full px-2.5 py-1"
+                >
+                  {weight}
+                </span>
+              )}
+            </div>
+            <p dir="ltr" className="text-[#FF5500] font-black text-xl mt-1 text-center">
               {Number(product.price).toFixed(2)} QAR
             </p>
           </div>
 
           {tasting && (
-            <div>
-              <p className="text-xs font-black uppercase tracking-wider text-black/50 mb-1">
+            <div className="text-left">
+              <p dir={dir} className="text-xs font-black uppercase tracking-wider text-black/50 mb-1 text-left">
                 {isAr ? 'ملاحظات التذوق' : 'Tasting Notes'}
               </p>
-              <p className="font-bold text-black">{tasting}</p>
+              <p dir={dir} className="font-bold text-black text-left">{tasting}</p>
             </div>
           )}
 
           {description && (
-            <div>
-              <p className="text-xs font-black uppercase tracking-wider text-black/50 mb-1">
+            <div className="text-left">
+              <p dir={dir} className="text-xs font-black uppercase tracking-wider text-black/50 mb-1 text-left">
                 {isAr ? 'الوصف' : 'Description'}
               </p>
-              <pre className="whitespace-pre-wrap font-[inherit] text-sm font-bold text-black/80 leading-relaxed">
+              <pre
+                dir={dir}
+                className="whitespace-pre-wrap font-[inherit] text-sm font-bold text-black/80 leading-relaxed text-left"
+              >
                 {description}
               </pre>
             </div>

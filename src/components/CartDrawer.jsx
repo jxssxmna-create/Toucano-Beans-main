@@ -34,10 +34,7 @@ export default function CartDrawer({ lang = 'en' }) {
         aria-modal="true"
         aria-label={isAr ? 'سلة التسوق' : 'Shopping cart'}
       >
-        <div
-          dir={isAr ? 'rtl' : 'ltr'}
-          className="flex flex-col h-full font-sans"
-        >
+        <div className="flex flex-col h-full font-sans">
           <div className="flex items-center justify-between px-4 py-4 border-b border-slate-300/70">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[#FF5F1F]">
@@ -76,10 +73,16 @@ export default function CartDrawer({ lang = 'en' }) {
                     className="w-14 h-14 rounded-lg object-cover bg-orange-50 shrink-0"
                   />
                   <div className="min-w-0 flex-1 space-y-2">
-                    <div className="flex justify-between gap-2">
-                      <p className="text-sm font-semibold truncate">{productName(product, lang)}</p>
-                      {product.weight && <p className="text-xs text-black/50" dir="ltr">{product.weight}</p>}
-                      <p className="text-sm font-semibold text-[#FF5F1F] whitespace-nowrap">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0 text-left">
+                        <p dir={isAr ? 'rtl' : 'ltr'} className="text-sm font-semibold truncate text-left">
+                          {productName(product, lang)}
+                        </p>
+                        <p dir="ltr" className="text-xs text-black/50 h-4 leading-4 text-left">
+                          {product.weight || ''}
+                        </p>
+                      </div>
+                      <p dir="ltr" className="text-sm font-semibold text-[#FF5F1F] whitespace-nowrap">
                         {lineTotal.toFixed(2)}
                       </p>
                     </div>

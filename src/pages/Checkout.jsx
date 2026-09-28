@@ -239,7 +239,7 @@ export default function CheckoutPage({
   }
 
   return (
-    <div className="bg-[#FAF0DF] text-black min-h-screen font-serif" dir={isAr ? 'rtl' : 'ltr'}>
+    <div className="bg-[#FAF0DF] text-black min-h-screen font-serif" dir="ltr">
       <header className="border-b border-slate-300/70 bg-[#FAF0DF]/95 sticky top-0 z-20">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 min-w-0">
@@ -410,11 +410,13 @@ export default function CheckoutPage({
                   className="flex flex-col gap-2 border border-slate-200 rounded-xl p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-sm">
+                    <div className="text-left">
+                      <p dir={isAr ? 'rtl' : 'ltr'} className="font-semibold text-sm text-left">
                         {productName(product, lang)}
-                        {product.weight && <span className="ms-1.5 text-xs font-medium text-black/50">· {product.weight}</span>}
                       </p>
+                      {product.weight && (
+                        <p dir="ltr" className="text-xs font-medium text-black/50 text-left">{product.weight}</p>
+                      )}
                       <p className="text-xs font-medium text-black/50">
                         {Number(product.price).toFixed(2)} QAR
                       </p>

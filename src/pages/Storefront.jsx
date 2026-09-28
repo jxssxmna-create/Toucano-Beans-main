@@ -11,6 +11,7 @@ import { fetchProducts } from '../lib/productsApi';
 import { resolveCategoryProducts } from '../lib/productCatalog';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 import { useCart } from '../context/CartContext';
+import { BRAND_AR, textDir } from '../lib/i18n';
 
 const PREVIEW_KEY = 'tb_buyer_preview';
 
@@ -151,7 +152,7 @@ export default function Storefront({
 
   useEffect(() => {
     document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = 'ltr';
   }, [lang]);
 
   useEffect(() => {
@@ -304,10 +305,7 @@ export default function Storefront({
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div
-          dir={lang === 'ar' ? 'rtl' : 'ltr'}
-          className="p-6 flex flex-col h-full justify-between overflow-y-auto"
-        >
+        <div className="p-6 flex flex-col h-full justify-between overflow-y-auto">
           <div>
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl font-serif font-bold text-black">{t.menuHeading}</h2>
@@ -509,7 +507,9 @@ export default function Storefront({
             <h2 className="font-serif font-bold text-black text-xl md:text-2xl leading-snug mb-3">
               {t.slogan}
             </h2>
-            <p className="text-black leading-relaxed font-medium text-[17px]">{t.storyBody}</p>
+            <p dir={textDir(lang)} className="text-black leading-relaxed font-medium text-[17px] text-center">
+              {t.storyBody}
+            </p>
           </section>
         )}
 
@@ -580,7 +580,9 @@ export default function Storefront({
             {lang === 'ar' ? 'سياسة الإرجاع' : 'Return Policy'}
           </button>
         </div>
-        <p>© 2026 Toucano Beans. All rights reserved.</p>
+        <p dir={textDir(lang)}>
+          {lang === 'ar' ? `© 2026 ${BRAND_AR}. جميع الحقوق محفوظة.` : '© 2026 Toucano Beans. All rights reserved.'}
+        </p>
       </footer>
 
       {policyModal && (

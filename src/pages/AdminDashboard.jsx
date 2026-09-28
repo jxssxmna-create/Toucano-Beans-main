@@ -167,7 +167,7 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
   ];
 
   return (
-    <div className="bg-[#FAF0DF] text-slate-900 min-h-screen font-serif" dir={isAr ? 'rtl' : 'ltr'}>
+    <div className="bg-[#FAF0DF] text-slate-900 min-h-screen font-serif" dir="ltr">
       <header className="border-b border-slate-300/70 bg-[#FAF0DF]/80 backdrop-blur sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">

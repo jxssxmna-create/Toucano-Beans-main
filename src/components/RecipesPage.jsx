@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchRecipes } from '../lib/commerceApi';
-import { recipeBody, recipeTitle } from '../lib/i18n';
+import { BRAND_AR, recipeBody, recipeTitle, textDir } from '../lib/i18n';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 
@@ -16,6 +16,7 @@ const FALLBACK = [
 
 export default function RecipesPage({ lang = 'en' }) {
   const isAr = lang === 'ar';
+  const dir = textDir(lang);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,16 +44,16 @@ export default function RecipesPage({ lang = 'en' }) {
   }, []);
 
   return (
-    <section className="w-full max-w-4xl">
-      <h2 className="text-2xl md:text-4xl font-serif font-bold text-black mb-2 text-center">
+    <section dir="ltr" className="w-full max-w-4xl">
+      <h2 dir={dir} className="text-2xl md:text-4xl font-serif font-bold text-black mb-2 text-center">
         {isAr ? 'وصفات القهوة' : 'Coffee Recipes'}
       </h2>
-      <p className="text-center text-black/60 font-bold mb-8">
-        {isAr ? 'طرق تحضير جريئة من توكانو بينز' : 'Bold brew guides from Toucano Beans'}
+      <p dir={dir} className="text-center text-black/60 font-bold mb-8">
+        {isAr ? `طرق تحضير جريئة من ${BRAND_AR}` : 'Bold brew guides from Toucano Beans'}
       </p>
 
       {loading ? (
-        <p className="text-center font-bold">{isAr ? 'جاري التحميل...' : 'Loading...'}</p>
+        <p dir={dir} className="text-center font-bold">{isAr ? 'جاري التحميل...' : 'Loading...'}</p>
       ) : (
         <div className="space-y-8">
           {recipes.map((r) => (
@@ -69,10 +70,16 @@ export default function RecipesPage({ lang = 'en' }) {
                 />
               )}
               <div className="p-5 sm:p-6 space-y-3">
-                <h3 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+                <h3
+                  dir={dir}
+                  className="text-2xl sm:text-3xl font-black text-black tracking-tight text-center"
+                >
                   {recipeTitle(r, lang)}
                 </h3>
-                <pre className="whitespace-pre-wrap font-[inherit] text-sm sm:text-base font-bold text-black/80 leading-relaxed">
+                <pre
+                  dir={dir}
+                  className="whitespace-pre-wrap font-[inherit] text-sm sm:text-base font-bold text-black/80 leading-relaxed text-left"
+                >
                   {recipeBody(r, lang)}
                 </pre>
               </div>

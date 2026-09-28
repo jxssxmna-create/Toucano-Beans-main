@@ -19,6 +19,7 @@ export default function QuantitySelector({
 
   return (
     <div
+      dir="ltr"
       className={`inline-flex items-center gap-2 ${className}`}
       onClick={(e) => stopPropagation && e.stopPropagation()}
     >

@@ -81,10 +81,10 @@ export default function PolicyModal({ type, lang = 'en', onClose }) {
         aria-labelledby="policy-modal-title"
         className="bg-[#fdf0de] text-black w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
-        dir={isAr ? 'rtl' : 'ltr'}
+        dir="ltr"
       >
         <div className="sticky top-0 bg-[#fdf0de] border-b border-slate-200 px-5 py-4 flex items-center justify-between gap-3">
-          <h2 id="policy-modal-title" className="text-xl font-black">
+          <h2 id="policy-modal-title" dir={isAr ? 'rtl' : 'ltr'} className="text-xl font-black text-left">
             {copy.title}
           </h2>
           <button
@@ -98,8 +98,8 @@ export default function PolicyModal({ type, lang = 'en', onClose }) {
         </div>
         <ul className="px-5 py-5 space-y-3 list-disc list-outside ms-5">
           {copy.bullets.map((item) => (
-            <li key={item} className="font-bold text-black/90 leading-relaxed">
-              {item}
+            <li key={item} className="font-bold text-black/90 leading-relaxed text-left">
+              <span dir={isAr ? 'rtl' : 'ltr'} className="inline-block text-left">{item}</span>
             </li>
           ))}
         </ul>

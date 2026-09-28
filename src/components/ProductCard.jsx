@@ -1,10 +1,10 @@
-import { extractTastingNotes } from '../lib/productCatalog';
-import { productDescription, productName } from '../lib/i18n';
+import { productDescription, productName, productTastingNotes, textDir } from '../lib/i18n';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import QuantitySelector from './QuantitySelector';
 
 /**
  * Product card with inline accordion details + Add to Cart → qty controls.
+ * Layout is LTR in both languages; only text leaves switch paragraph direction.
  */
 export default function ProductCard({
   product,
@@ -15,16 +15,15 @@ export default function ProductCard({
   lang = 'en',
 }) {
   const isAr = lang === 'ar';
+  const dir = textDir(lang);
   const name = productName(product, lang);
   const description = String(productDescription(product, lang)).trim();
-  const arTasting = isAr && product.description_ar
-    ? product.description_ar.match(/ملاحظات التذوق\s*[:：]\s*(.+)/)?.[1]?.trim()
-    : null;
-  const tasting = arTasting || extractTastingNotes(product);
+  const tasting = productTastingNotes(product, lang);
   const weight = product.weight?.trim();
 
   return (
     <div
+      dir="ltr"
       className={`bg-white p-5 rounded-2xl shadow border transition text-center ${
         expanded ? 'border-[#FF5F1F] shadow-md' : 'border-slate-200 hover:border-[#FF5F1F]/40'
       }`}
@@ -41,22 +40,33 @@ export default function ProductCard({
           onError={handleLogoError}
           className="h-40 w-full object-contain rounded-xl mb-4 bg-orange-50 p-2 pointer-events-none"
         />
-        <h3 className="font-serif font-bold text-black text-lg">{name}</h3>
-        {weight && (
-          <span className="inline-block mt-1 text-xs font-semibold text-black/70 bg-[#FAF0DF] border border-black/10 rounded-full px-2.5 py-0.5" dir="ltr">
-            {weight}
-          </span>
-        )}
+        <h3 dir={dir} className="font-serif font-bold text-black text-lg leading-snug text-center">
+          {name}
+        </h3>
+        <div className="mt-1 h-6 flex items-center justify-center">
+          {weight && (
+            <span
+              dir="ltr"
+              className="text-xs font-semibold leading-none text-black/70 bg-[#FAF0DF] border border-black/10 rounded-full px-2.5 py-1"
+            >
+              {weight}
+            </span>
+          )}
+        </div>
         {!expanded && tasting && (
-          <p className="text-sm text-black/55 mt-1 line-clamp-1 font-medium">{tasting}</p>
+          <p dir={dir} className="text-sm text-black/55 mt-1 line-clamp-1 font-medium text-center">
+            {tasting}
+          </p>
         )}
         {!expanded && !tasting && description && (
-          <p className="text-sm text-black/70 mt-1 line-clamp-2 font-medium">{description}</p>
+          <p dir={dir} className="text-sm text-black/70 mt-1 line-clamp-2 font-medium text-center">
+            {description}
+          </p>
         )}
-        <p className="text-[#FF5F1F] font-semibold mt-2 text-base">
+        <p dir="ltr" className="text-[#FF5F1F] font-semibold mt-2 text-base text-center">
           {Number(product.price).toFixed(2)} QAR
         </p>
-        <p className="mt-2 text-xs font-medium text-black/40">
+        <p dir={dir} className="mt-2 text-xs font-medium text-black/40 text-center">
           {expanded
             ? isAr
               ? 'اضغط للطي'
@@ -72,29 +82,32 @@ export default function ProductCard({
           expanded ? 'max-h-[1200px] opacity-100 mt-4' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="border-t border-slate-200 pt-4 space-y-3 text-start">
+        <div className="border-t border-slate-200 pt-4 space-y-3 text-left">
           {weight && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1">
+              <p dir={dir} className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1 text-left">
                 {isAr ? 'الوزن' : 'Weight'}
               </p>
-              <p className="text-[15px] font-medium text-black" dir="ltr">{weight}</p>
+              <p dir="ltr" className="text-[15px] font-medium text-black text-left">{weight}</p>
             </div>
           )}
           {tasting && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1">
+              <p dir={dir} className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1 text-left">
                 {isAr ? 'ملاحظات التذوق' : 'Flavor Notes'}
               </p>
-              <p className="text-[15px] font-medium text-black leading-relaxed">{tasting}</p>
+              <p dir={dir} className="text-[15px] font-medium text-black leading-relaxed text-left">{tasting}</p>
             </div>
           )}
           {description && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1">
+              <p dir={dir} className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1 text-left">
                 {isAr ? 'التفاصيل والتحميص' : 'Description & Roast Details'}
               </p>
-              <pre className="whitespace-pre-wrap font-serif text-[15px] font-medium text-black/80 leading-relaxed">
+              <pre
+                dir={dir}
+                className="whitespace-pre-wrap font-serif text-[15px] font-medium text-black/80 leading-relaxed text-left"
+              >
                 {description}
               </pre>
             </div>
