@@ -128,6 +128,18 @@ export async function createRecipe(payload) {
   return data;
 }
 
+export async function updateRecipe(id, updates) {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('recipes')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteRecipe(id) {
   assertConfigured();
   const { error } = await supabase.from('recipes').delete().eq('id', id);

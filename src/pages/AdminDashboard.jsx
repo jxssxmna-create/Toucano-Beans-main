@@ -15,6 +15,7 @@ import {
   fetchProducts,
   nextDisplayOrder,
   swapProductOrder,
+  updateProduct,
   uploadProductImage,
 } from '../lib/productsApi';
 
@@ -28,6 +29,7 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [busyId, setBusyId] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [message, setMessage] = useState(null);
   const isAr = lang === 'ar';
 
@@ -57,21 +59,47 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
     loadOrders();
   }, [loadProducts, loadOrders]);
 
-  async function handleCreate({ name, description, price, category, files }) {
+  async function uploadAll(files) {
+    const urls = [];
+    for (const file of files || []) {
+      const { publicUrl } = await uploadProductImage(file);
+      urls.push(publicUrl);
+    }
+    return urls;
+  }
+
+  async function handleUpdate({ files, ...fields }) {
+    const product = editingProduct;
     setSubmitting(true);
     setMessage(null);
     try {
-      const urls = [];
-      for (const file of files || []) {
-        const { publicUrl } = await uploadProductImage(file);
-        urls.push(publicUrl);
+      const newUrls = await uploadAll(files);
+      const existing = [
+        ...(Array.isArray(product.image_urls) ? product.image_urls : []),
+        product.image_url,
+      ].filter(Boolean);
+      const image_urls = [...new Set([...existing, ...newUrls])];
+      const updates = { ...fields, image_urls, image_url: product.image_url || image_urls[0] || null };
+      if (fields.category !== product.category) {
+        updates.display_order = await nextDisplayOrder(fields.category);
       }
-      const display_order = await nextDisplayOrder(category);
+      await updateProduct(product.id, updates);
+      setEditingProduct(null);
+      setMessage({ type: 'success', text: isAr ? 'تم تحديث المنتج' : 'Product updated' });
+      await loadProducts();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleCreate({ files, ...fields }) {
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      const urls = await uploadAll(files);
+      const display_order = await nextDisplayOrder(fields.category);
       await createProduct({
-        name,
-        description,
-        price,
-        category,
+        ...fields,
         image_url: urls[0] || null,
         image_urls: urls,
         display_order,
@@ -221,7 +249,18 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
 
         {tab === 'products' && (
           <>
-            <ProductForm lang={lang} onSubmit={handleCreate} submitting={submitting} />
+            {editingProduct ? (
+              <ProductForm
+                key={editingProduct.id}
+                lang={lang}
+                product={editingProduct}
+                onSubmit={handleUpdate}
+                onCancel={() => setEditingProduct(null)}
+                submitting={submitting}
+              />
+            ) : (
+              <ProductForm key="new" lang={lang} onSubmit={handleCreate} submitting={submitting} />
+            )}
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-extrabold text-slate-900">
@@ -245,6 +284,10 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
                   lang={lang}
                   busyId={busyId}
                   onDelete={handleDelete}
+                  onEdit={(product) => {
+                    setEditingProduct(product);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
                   onMoveUp={(product, neighbor) => handleReorder(product, neighbor)}
                   onMoveDown={(product, neighbor) => handleReorder(product, neighbor)}
                 />

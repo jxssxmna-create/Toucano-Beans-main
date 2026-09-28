@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchRecipes } from '../lib/commerceApi';
+import { recipeBody, recipeTitle } from '../lib/i18n';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 
@@ -62,17 +63,17 @@ export default function RecipesPage({ lang = 'en' }) {
               {r.image_url && (
                 <img
                   src={r.image_url || LOGO_SRC}
-                  alt={r.title}
+                  alt={recipeTitle(r, lang)}
                   onError={handleLogoError}
                   className="w-full h-48 object-cover bg-orange-50"
                 />
               )}
               <div className="p-5 sm:p-6 space-y-3">
                 <h3 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
-                  {r.title}
+                  {recipeTitle(r, lang)}
                 </h3>
                 <pre className="whitespace-pre-wrap font-[inherit] text-sm sm:text-base font-bold text-black/80 leading-relaxed">
-                  {r.body}
+                  {recipeBody(r, lang)}
                 </pre>
               </div>
             </article>

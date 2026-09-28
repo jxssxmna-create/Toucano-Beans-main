@@ -1,4 +1,5 @@
 import { extractTastingNotes } from '../lib/productCatalog';
+import { productDescription, productName } from '../lib/i18n';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import QuantitySelector from './QuantitySelector';
 
@@ -14,8 +15,13 @@ export default function ProductCard({
   lang = 'en',
 }) {
   const isAr = lang === 'ar';
-  const tasting = extractTastingNotes(product);
-  const description = String(product.description || '').trim();
+  const name = productName(product, lang);
+  const description = String(productDescription(product, lang)).trim();
+  const arTasting = isAr && product.description_ar
+    ? product.description_ar.match(/ملاحظات التذوق\s*[:：]\s*(.+)/)?.[1]?.trim()
+    : null;
+  const tasting = arTasting || extractTastingNotes(product);
+  const weight = product.weight?.trim();
 
   return (
     <div
@@ -31,11 +37,16 @@ export default function ProductCard({
       >
         <img
           src={product.image_url || LOGO_SRC}
-          alt={product.name}
+          alt={name}
           onError={handleLogoError}
           className="h-40 w-full object-contain rounded-xl mb-4 bg-orange-50 p-2 pointer-events-none"
         />
-        <h3 className="font-serif font-bold text-black text-lg">{product.name}</h3>
+        <h3 className="font-serif font-bold text-black text-lg">{name}</h3>
+        {weight && (
+          <span className="inline-block mt-1 text-xs font-semibold text-black/70 bg-[#FAF0DF] border border-black/10 rounded-full px-2.5 py-0.5" dir="ltr">
+            {weight}
+          </span>
+        )}
         {!expanded && tasting && (
           <p className="text-sm text-black/55 mt-1 line-clamp-1 font-medium">{tasting}</p>
         )}
@@ -62,6 +73,14 @@ export default function ProductCard({
         }`}
       >
         <div className="border-t border-slate-200 pt-4 space-y-3 text-start">
+          {weight && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1">
+                {isAr ? 'الوزن' : 'Weight'}
+              </p>
+              <p className="text-[15px] font-medium text-black" dir="ltr">{weight}</p>
+            </div>
+          )}
           {tasting && (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1">

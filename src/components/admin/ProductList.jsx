@@ -6,6 +6,7 @@ export default function ProductList({
   lang = 'en',
   busyId,
   onDelete,
+  onEdit,
   onMoveUp,
   onMoveDown,
 }) {
@@ -42,16 +43,43 @@ export default function ProductList({
                         onError={handleLogoError}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-slate-800 truncate">{product.name}</p>
+                        <p className="font-bold text-slate-800 truncate">
+                          {product.name}
+                          {product.name_ar && (
+                            <span className="ms-2 font-medium text-slate-500" dir="rtl">
+                              · {product.name_ar}
+                            </span>
+                          )}
+                        </p>
                         <p className="text-sm text-slate-500 line-clamp-2">{product.description}</p>
                         <p className="text-brandorange font-bold mt-1">
                           {Number(product.price).toFixed(2)} QAR
+                          {product.weight && (
+                            <span className="ms-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-full px-2 py-0.5">
+                              {product.weight}
+                            </span>
+                          )}
+                          {!product.description_ar && product.description && (
+                            <span className="ms-2 text-xs font-semibold text-amber-700 bg-amber-50 rounded-full px-2 py-0.5">
+                              {isAr ? 'بدون ترجمة عربية' : 'No Arabic description'}
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-slate-400 mt-1">
                           {isAr ? 'الترتيب' : 'Order'}: {product.display_order}
                         </p>
                       </div>
                       <div className="flex sm:flex-col gap-2 shrink-0">
+                        {onEdit && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => onEdit(product)}
+                            className="px-3 py-1.5 text-sm rounded-lg bg-slate-900 text-white disabled:opacity-40 hover:bg-slate-800"
+                          >
+                            {isAr ? 'تعديل' : 'Edit'}
+                          </button>
+                        )}
                         <button
                           type="button"
                           disabled={busy || index === 0}

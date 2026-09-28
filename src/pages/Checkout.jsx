@@ -13,6 +13,7 @@ import {
   upsertSavedAddress,
 } from '../lib/commerceApi';
 import { formatAddressLine } from '../lib/maps';
+import { productName } from '../lib/i18n';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { normalizePhone, validatePhone } from '../lib/authHelpers';
 
@@ -189,6 +190,7 @@ export default function CheckoutPage({
         qty,
         price: Number(product.price),
         category: product.category,
+        weight: product.weight || null,
       }));
 
       const deliveryLocation =
@@ -409,7 +411,10 @@ export default function CheckoutPage({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-sm">{product.name}</p>
+                      <p className="font-semibold text-sm">
+                        {productName(product, lang)}
+                        {product.weight && <span className="ms-1.5 text-xs font-medium text-black/50">· {product.weight}</span>}
+                      </p>
                       <p className="text-xs font-medium text-black/50">
                         {Number(product.price).toFixed(2)} QAR
                       </p>

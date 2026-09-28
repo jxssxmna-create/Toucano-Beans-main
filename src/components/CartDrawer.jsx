@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import QuantitySelector from './QuantitySelector';
 import { useCart } from '../context/CartContext';
 import { LOGO_SRC, handleLogoError } from '../lib/logo';
+import { productName } from '../lib/i18n';
 
 export default function CartDrawer({ lang = 'en' }) {
   const isAr = lang === 'ar';
@@ -76,7 +77,8 @@ export default function CartDrawer({ lang = 'en' }) {
                   />
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex justify-between gap-2">
-                      <p className="text-sm font-semibold truncate">{product.name}</p>
+                      <p className="text-sm font-semibold truncate">{productName(product, lang)}</p>
+                      {product.weight && <p className="text-xs text-black/50" dir="ltr">{product.weight}</p>}
                       <p className="text-sm font-semibold text-[#FF5F1F] whitespace-nowrap">
                         {lineTotal.toFixed(2)}
                       </p>
