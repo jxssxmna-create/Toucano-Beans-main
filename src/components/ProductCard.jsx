@@ -84,7 +84,11 @@ export default function ProductCard({
       </div>
 
       <div className="mt-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
-        {qty > 0 ? (
+        {product.in_stock === false && qty === 0 ? (
+          <span className="w-full sm:w-auto min-w-[10rem] px-5 py-2.5 rounded-xl bg-slate-200 text-slate-500 text-sm font-semibold text-center">
+            {isAr ? 'نفد من المخزون' : 'Out of stock'}
+          </span>
+        ) : qty > 0 ? (
           <QuantitySelector value={qty} onChange={onQtyChange} />
         ) : (
           <button

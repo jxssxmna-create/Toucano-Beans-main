@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
@@ -9,14 +9,18 @@ import KnowledgeBase from './pages/admin/KnowledgeBase';
 import AdminRoute from './components/AdminRoute';
 import AIChatbot from './components/AIChatbot';
 import DeliveryRoute from './components/DeliveryRoute';
-import { pathForAuthView, resolveAuthView } from './lib/adminAuth';
+import EmployeeRoute from './components/EmployeeRoute';
+import EmployeeDashboard from './pages/employee/Dashboard';
+import EmployeeProfile from './pages/employee/Profile';
+import { pathForAuthView, prefixForAuthView, resolveAuthView } from './lib/adminAuth';
 
 const PREVIEW_KEY = 'tb_buyer_preview';
+const DASHBOARD_PREFIXES = ['/admin', '/delivery', '/employee'];
 
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, profile, loading, isAdmin, authEvent, signOut } = useAuth();
+  const { session, profile, loading, isAdmin, authEvent, signOut, refreshProfile } = useAuth();
   const [lang, setLang] = useState('en');
   const [hasBootstrappedRoute, setHasBootstrappedRoute] = useState(false);
   const [buyerPreview, setBuyerPreview] = useState(
@@ -33,15 +37,13 @@ export default function App() {
   useEffect(() => {
     if (loading) return;
 
+    const onDashboard = DASHBOARD_PREFIXES.some((p) => location.pathname.startsWith(p));
     const email = session?.user?.email;
     if (!email) {
       setHasBootstrappedRoute(false);
       setBuyerPreview(false);
       sessionStorage.removeItem(PREVIEW_KEY);
-      if (
-        location.pathname.startsWith('/admin') ||
-        location.pathname.startsWith('/delivery')
-      ) {
+      if (onDashboard) {
         navigate('/', { replace: true, state: { openAccount: true } });
       }
       return;
@@ -49,8 +51,8 @@ export default function App() {
 
     const view = resolveAuthView(email);
     const target = pathForAuthView(view);
+    const ownPrefix = prefixForAuthView(view);
     const onAdmin = location.pathname.startsWith('/admin');
-    const onDelivery = location.pathname.startsWith('/delivery');
     const onCheckout = location.pathname.startsWith('/checkout');
     const previewOn = sessionStorage.getItem(PREVIEW_KEY) === '1' || buyerPreview;
 
@@ -64,8 +66,9 @@ export default function App() {
         setHasBootstrappedRoute(true);
         return;
       }
-      const onTarget =
-        target === '/' ? location.pathname === '/' : location.pathname.startsWith(target);
+      const onTarget = ownPrefix
+        ? location.pathname.startsWith(ownPrefix)
+        : location.pathname === '/';
       if (!onTarget) {
         navigate(target, { replace: true });
       }
@@ -73,12 +76,8 @@ export default function App() {
       return;
     }
 
-    if (view === 'customer-dashboard' && (onAdmin || onDelivery)) {
-      navigate('/', { replace: true });
-    } else if (view === 'admin-dashboard' && onDelivery) {
-      navigate('/admin', { replace: true });
-    } else if (view === 'delivery-dashboard' && onAdmin) {
-      navigate('/delivery', { replace: true });
+    if (onDashboard && !(ownPrefix && location.pathname.startsWith(ownPrefix))) {
+      navigate(target, { replace: true });
     }
   }, [loading, session, authEvent, hasBootstrappedRoute, buyerPreview, location.pathname, navigate]);
 
@@ -106,12 +105,41 @@ export default function App() {
     );
   }
 
-  const showChatbot =
-    !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/delivery');
+  const showChatbot = !DASHBOARD_PREFIXES.some((p) => location.pathname.startsWith(p));
 
   return (
     <>
     <Routes>
+      <Route
+        path="/employee/profile"
+        element={
+          <EmployeeRoute session={session} profile={profile} loading={loading} requireProfile={false}>
+            <EmployeeProfile
+              session={session}
+              profile={profile}
+              lang={lang}
+              setLang={setLang}
+              onSignOut={handleSignOut}
+              refreshProfile={refreshProfile}
+            />
+          </EmployeeRoute>
+        }
+      />
+      <Route
+        path="/employee/dashboard"
+        element={
+          <EmployeeRoute session={session} profile={profile} loading={loading}>
+            <EmployeeDashboard
+              session={session}
+              profile={profile}
+              lang={lang}
+              setLang={setLang}
+              onSignOut={handleSignOut}
+            />
+          </EmployeeRoute>
+        }
+      />
+      <Route path="/employee" element={<Navigate to="/employee/dashboard" replace />} />
       <Route
         path="/admin/knowledge"
         element={

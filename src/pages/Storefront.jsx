@@ -65,42 +65,53 @@ const CATEGORY_KEYS = {
   essentials: 'essentials',
 };
 
-/** Realistic multi-bean coffee SVG with crease/seam detail */
+/** One sketchy bean centred on 0,0: double organic outline + wavy centre crease. */
+function SketchBean({ transform, seed = 0 }) {
+  const j = (n) => (n + seed * 0.35).toFixed(2);
+  return (
+    <g transform={transform}>
+      <path
+        d="M0 -15.5C8.2 -15.6 11.4 -6.4 10.9 1.8C10.3 10.4 5.2 15.9 -0.6 15.4C-7.4 14.8 -10.9 6.9 -10.4 -1.3C-9.9 -9.6 -6.1 -15.4 0 -15.5Z"
+        fill="#FAF0DF"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path
+        d={`M-1.2 -14.3C6.4 ${j(-15.9)} 12 -7.3 11.4 1.4C10.9 9.6 4.8 16.6 -1.4 15.9C-8.1 15.1 ${j(-11.6)} 6.1 -10.8 -2C-9.9 -8.9 -5.3 -13.6 1.8 -14.9`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+        opacity="0.55"
+      />
+      <path
+        d={`M1.6 -13.2C-3.6 -7.4 ${j(3.9)} -2.2 -0.3 3.6C-3.2 7.6 0.4 10.4 -1.6 13.6`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M2.9 -11.4C-1.4 -6.6 5.1 -2.4 1.2 3.1C-1.1 6.4 1.8 9.2 0.3 11.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+    </g>
+  );
+}
+
 function CategoryIcon({ type }) {
   const box = 'w-14 h-14 block mx-auto';
   if (type === 'coffee-beans') {
     return (
       <svg className={box} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        {/* Bean 1 — left */}
-        <ellipse cx="20" cy="28" rx="11" ry="16" transform="rotate(-28 20 28)" fill="currentColor" />
-        <path
-          d="M14 18c3 4 4 10 3 16s-4 10-7 13"
-          transform="rotate(-28 20 28)"
-          stroke="#FAF0DF"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          opacity="0.85"
-        />
-        {/* Bean 2 — right */}
-        <ellipse cx="44" cy="26" rx="11" ry="16" transform="rotate(24 44 26)" fill="currentColor" />
-        <path
-          d="M38 16c3 4 4 10 3 16s-4 10-7 13"
-          transform="rotate(24 44 26)"
-          stroke="#FAF0DF"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          opacity="0.85"
-        />
-        {/* Bean 3 — bottom center */}
-        <ellipse cx="32" cy="46" rx="11" ry="15" transform="rotate(-4 32 46)" fill="currentColor" />
-        <path
-          d="M26 36c3 3.5 4 9 3 14s-3.5 9-6.5 11.5"
-          transform="rotate(-4 32 46)"
-          stroke="#FAF0DF"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          opacity="0.85"
-        />
+        <SketchBean transform="translate(20 25) rotate(-28)" seed={0} />
+        <SketchBean transform="translate(44 24) rotate(26) scale(0.96)" seed={1} />
+        <SketchBean transform="translate(32 45) rotate(-6) scale(1.02)" seed={2} />
       </svg>
     );
   }

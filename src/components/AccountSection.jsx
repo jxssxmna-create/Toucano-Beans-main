@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import SignUp from '../pages/SignUp';
 import AccountPage from './AccountPage';
-import { isAdminUser, isDeliveryUser, pathForAuthView, resolveAuthView } from '../lib/adminAuth';
+import {
+  isAdminUser,
+  isDeliveryUser,
+  isEmployeeUser,
+  pathForAuthView,
+  resolveAuthView,
+} from '../lib/adminAuth';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -20,6 +26,7 @@ export default function AccountSection({
   const navigate = useNavigate();
   const isAr = lang === 'ar';
   const isDelivery = isDeliveryUser(session?.user, profile);
+  const isEmployee = isEmployeeUser(session?.user, profile);
   const admin = !buyerPreview && (isAdmin || isAdminUser(session?.user, profile));
 
   const tabs = [
@@ -43,13 +50,17 @@ export default function AccountSection({
                 ? isAr
                   ? 'توصيل'
                   : 'Delivery'
+                : view === 'employee-dashboard'
+                  ? isAr
+                    ? 'موظف'
+                    : 'Employee'
                 : isAr
                   ? 'عميل'
                   : 'Customer'}
           </p>
           <p className="font-bold text-sm text-black/70 truncate">{session.user?.email}</p>
 
-          {(admin || (!buyerPreview && isDelivery)) && (
+          {(admin || (!buyerPreview && (isDelivery || isEmployee))) && (
             <button
               type="button"
               onClick={() => navigate(dashPath)}
@@ -59,9 +70,13 @@ export default function AccountSection({
                 ? isAr
                   ? 'فتح لوحة التحكم'
                   : 'Open Admin Dashboard'
-                : isAr
-                  ? 'فتح لوحة التوصيل'
-                  : 'Open Delivery Dashboard'}
+                : view === 'employee-dashboard'
+                  ? isAr
+                    ? 'فتح لوحة الموظفين'
+                    : 'Open Employee Dashboard'
+                  : isAr
+                    ? 'فتح لوحة التوصيل'
+                    : 'Open Delivery Dashboard'}
             </button>
           )}
         </div>
