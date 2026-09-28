@@ -34,29 +34,53 @@ const COPY = {
   },
 };
 
-function ToucanCupIcon({ className = 'w-8 h-8' }) {
+/** Minimal toucan outline inside a chat bubble. */
+function ToucanChatIcon({ className = 'w-8 h-8' }) {
   return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
-      <path d="M17 6c1.5 2-1.5 3 0 5M23 5c1.5 2-1.5 3 0 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M8 18h26v10a11 11 0 0 1-11 11h-4A11 11 0 0 1 8 28V18z" fill="currentColor" />
-      <path d="M34 21h3a5 5 0 0 1 0 10h-3" fill="none" stroke="currentColor" strokeWidth="3" />
-      <circle cx="21" cy="26" r="7" fill="#FAF0DF" />
-      <path d="M24 23.5c4-2 9-1.5 12 1-3 .5-7 1.8-12 3.2z" fill="#FF5F1F" />
-      <circle cx="19.5" cy="25" r="1.6" fill="#111" />
+    <svg
+      viewBox="0 0 48 48"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M24 5C13.5 5 5 12.6 5 22c0 4.7 2.1 8.9 5.6 12L9 43l9.4-4.6c1.8.4 3.7.6 5.6.6 10.5 0 19-7.6 19-17S34.5 5 24 5z" />
+      <path d="M15 31c-2.4-5.6-.8-12.6 4.6-15.2 3.4-1.6 7-.9 9.1 1.3" />
+      <path d="M28.7 17.1c3.9-.9 7.5-.2 10 1.8-4.1.5-7.8 1.7-10.9 3.6" />
+      <path d="M28.7 17.1c-.9 2-.9 3.8.1 5.4" />
+      <circle cx="22.5" cy="19.8" r="1.4" fill="currentColor" stroke="none" />
+      <path d="M17.5 31.5c2.8-2.4 6.2-3.4 9.6-2.9" />
     </svg>
   );
 }
 
+const TOKEN_RE = /(\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g;
+const LINK_RE = /^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/;
+
 function renderRich(text) {
   return text.split('\n').map((line, i) => (
     <p key={i} className={line.trim() ? '' : 'h-2'}>
-      {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
-        part.startsWith('**') && part.endsWith('**') ? (
-          <strong key={j}>{part.slice(2, -2)}</strong>
-        ) : (
-          <span key={j}>{part}</span>
-        )
-      )}
+      {line.split(TOKEN_RE).map((part, j) => {
+        if (part.startsWith('**') && part.endsWith('**')) return <strong key={j}>{part.slice(2, -2)}</strong>;
+        const link = part.match(LINK_RE);
+        if (link) {
+          return (
+            <a
+              key={j}
+              href={link[2]}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="text-[#FF5F1F] underline underline-offset-2 break-all"
+            >
+              {link[1]}
+            </a>
+          );
+        }
+        return <span key={j}>{part}</span>;
+      })}
     </p>
   ));
 }
@@ -159,7 +183,7 @@ export default function AIChatbot({ lang = 'en', userId = null }) {
       >
         <header className="flex items-center gap-3 px-4 py-3 bg-black text-[#FAF0DF]">
           <span className="w-10 h-10 rounded-full bg-[#FF5F1F] text-black flex items-center justify-center shrink-0">
-            <ToucanCupIcon className="w-7 h-7" />
+            <ToucanChatIcon className="w-6 h-6 text-white" />
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-semibold leading-tight truncate">{t.title}</p>
@@ -266,7 +290,7 @@ export default function AIChatbot({ lang = 'en', userId = null }) {
             <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
           </svg>
         ) : (
-          <ToucanCupIcon className="w-10 h-10" />
+          <ToucanChatIcon className="w-9 h-9 text-white" />
         )}
       </button>
     </div>

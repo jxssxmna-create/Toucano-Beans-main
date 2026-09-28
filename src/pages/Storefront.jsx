@@ -65,40 +65,20 @@ const CATEGORY_KEYS = {
   essentials: 'essentials',
 };
 
-/** One sketchy bean centred on 0,0: double organic outline + wavy centre crease. */
-function SketchBean({ transform, seed = 0 }) {
-  const j = (n) => (n + seed * 0.35).toFixed(2);
+/** Solid organic bean centred on 0,0 with a hand-drawn wavy crease cut out in the page colour. */
+function SolidBean({ transform }) {
   return (
     <g transform={transform}>
       <path
         d="M0 -15.5C8.2 -15.6 11.4 -6.4 10.9 1.8C10.3 10.4 5.2 15.9 -0.6 15.4C-7.4 14.8 -10.9 6.9 -10.4 -1.3C-9.9 -9.6 -6.1 -15.4 0 -15.5Z"
-        fill="#FAF0DF"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
+        fill="currentColor"
       />
       <path
-        d={`M-1.2 -14.3C6.4 ${j(-15.9)} 12 -7.3 11.4 1.4C10.9 9.6 4.8 16.6 -1.4 15.9C-8.1 15.1 ${j(-11.6)} 6.1 -10.8 -2C-9.9 -8.9 -5.3 -13.6 1.8 -14.9`}
+        d="M1.6 -13.2C-3.6 -7.4 3.9 -2.2 -0.3 3.6C-3.2 7.6 0.4 10.4 -1.6 13.6"
         fill="none"
-        stroke="currentColor"
-        strokeWidth="0.9"
+        stroke="#FAF0DF"
+        strokeWidth="1.8"
         strokeLinecap="round"
-        opacity="0.55"
-      />
-      <path
-        d={`M1.6 -13.2C-3.6 -7.4 ${j(3.9)} -2.2 -0.3 3.6C-3.2 7.6 0.4 10.4 -1.6 13.6`}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M2.9 -11.4C-1.4 -6.6 5.1 -2.4 1.2 3.1C-1.1 6.4 1.8 9.2 0.3 11.8"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="0.8"
-        strokeLinecap="round"
-        opacity="0.5"
       />
     </g>
   );
@@ -108,10 +88,10 @@ function CategoryIcon({ type }) {
   const box = 'w-14 h-14 block mx-auto';
   if (type === 'coffee-beans') {
     return (
-      <svg className={box} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-        <SketchBean transform="translate(20 25) rotate(-28)" seed={0} />
-        <SketchBean transform="translate(44 24) rotate(26) scale(0.96)" seed={1} />
-        <SketchBean transform="translate(32 45) rotate(-6) scale(1.02)" seed={2} />
+      <svg className={box} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
+        <SolidBean transform="translate(15 16) rotate(-28) scale(0.86)" />
+        <SolidBean transform="translate(49 16) rotate(28) scale(0.86)" />
+        <SolidBean transform="translate(32 48) rotate(-4) scale(0.88)" />
       </svg>
     );
   }
@@ -233,8 +213,8 @@ export default function Storefront({
   const cartButton = (className) => (
     <button
       onClick={openCart}
-      className={`pointer-events-auto relative p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none ${className}`}
-      aria-label="Cart"
+      className={`pointer-events-auto flex items-center justify-center gap-1.5 p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none ${className}`}
+      aria-label={`Cart (${cartCount})`}
     >
       <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
         <path
@@ -243,7 +223,7 @@ export default function Storefront({
           d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
         />
       </svg>
-      <span className="absolute top-0.5 right-0.5 bg-[#FF5F1F] text-white text-xs font-semibold w-5 h-5 rounded-full flex items-center justify-center">
+      <span className="min-w-[1.25rem] h-5 px-1 bg-[#FF5F1F] text-white text-xs font-semibold leading-none tabular-nums rounded-full flex items-center justify-center">
         {cartCount}
       </span>
     </button>

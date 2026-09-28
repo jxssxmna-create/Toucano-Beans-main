@@ -46,7 +46,7 @@ export default function HeaderControls({
       </button>
 
       <div
-        className={`flex items-center rounded-lg border border-slate-300/80 bg-white/70 backdrop-blur-sm overflow-hidden text-xs font-semibold ${
+        className={`flex flex-col items-stretch rounded-lg border border-slate-300/80 bg-white/70 backdrop-blur-sm overflow-hidden text-[11px] font-semibold leading-none divide-y divide-slate-300/80 ${
           stackOnMobile ? 'order-3 sm:order-2' : ''
         }`}
         role="group"
@@ -55,19 +55,18 @@ export default function HeaderControls({
         <button
           type="button"
           onClick={() => setLang?.('en')}
-          className={`px-2.5 py-2 transition ${
+          aria-pressed={lang === 'en'}
+          className={`px-2.5 py-1.5 transition ${
             lang === 'en' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
           }`}
         >
           EN
         </button>
-        <span className="text-slate-300 select-none" aria-hidden="true">
-          |
-        </span>
         <button
           type="button"
           onClick={() => setLang?.('ar')}
-          className={`px-2.5 py-2 transition ${
+          aria-pressed={lang === 'ar'}
+          className={`px-2.5 py-1.5 transition ${
             lang === 'ar' ? 'bg-[#FF5F1F] text-white' : 'text-black hover:text-[#FF5F1F]'
           }`}
         >
