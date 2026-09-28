@@ -32,7 +32,7 @@ export function productDescription(product, lang) {
 
 export function productTastingNotes(product, lang) {
   if (lang === 'ar' && product?.description_ar) {
-    const ar = product.description_ar.match(/ملاحظات التذوق\s*[:：]\s*(.+)/)?.[1]?.trim();
+    const ar = product.description_ar.match(/(?:ملاحظات التذوق|الروائح العطرية)\s*[:：]\s*(.+)/)?.[1]?.trim();
     if (ar) return enforceBrand(ar, lang);
   }
   return enforceBrand(extractTastingNotes(product), lang);
