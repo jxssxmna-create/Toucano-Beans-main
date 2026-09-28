@@ -213,18 +213,20 @@ export default function Storefront({
   const cartButton = (className) => (
     <button
       onClick={openCart}
-      className={`pointer-events-auto flex items-center justify-center gap-1.5 p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none ${className}`}
+      className={`pointer-events-auto p-3 text-black hover:text-[#FF5F1F] transition focus:outline-none ${className}`}
       aria-label={`Cart (${cartCount})`}
     >
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-        />
-      </svg>
-      <span className="min-w-[1.25rem] h-5 px-1 bg-[#FF5F1F] text-white text-xs font-semibold leading-none tabular-nums rounded-full flex items-center justify-center">
-        {cartCount}
+      <span className="relative block w-7 h-7">
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+          />
+        </svg>
+        <span className="absolute -top-1.5 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-[#FF5F1F] text-white text-xs font-semibold tabular-nums flex items-center justify-center leading-none text-center">
+          {cartCount}
+        </span>
       </span>
     </button>
   );

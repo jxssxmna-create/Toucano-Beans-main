@@ -46,7 +46,7 @@ export default function HeaderControls({
       </button>
 
       <div
-        className={`flex flex-col items-stretch rounded-lg border border-slate-300/80 bg-white/70 backdrop-blur-sm overflow-hidden text-[11px] font-semibold leading-none divide-y divide-slate-300/80 ${
+        className={`flex flex-col md:flex-row items-stretch rounded-lg border border-slate-300/80 bg-white/70 backdrop-blur-sm overflow-hidden text-[11px] font-semibold leading-none divide-y md:divide-y-0 md:divide-x divide-slate-300/80 ${
           stackOnMobile ? 'order-3 sm:order-2' : ''
         }`}
         role="group"
