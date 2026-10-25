@@ -5,9 +5,7 @@ import Storefront from './pages/Storefront';
 import AdminDashboard from './pages/AdminDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
 import CheckoutPage from './pages/Checkout';
-import KnowledgeBase from './pages/admin/KnowledgeBase';
 import AdminRoute from './components/AdminRoute';
-import AIChatbot from './components/AIChatbot';
 import DeliveryRoute from './components/DeliveryRoute';
 import EmployeeRoute from './components/EmployeeRoute';
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -105,10 +103,7 @@ export default function App() {
     );
   }
 
-  const showChatbot = !DASHBOARD_PREFIXES.some((p) => location.pathname.startsWith(p));
-
   return (
-    <>
     <Routes>
       <Route
         path="/employee/profile"
@@ -140,14 +135,6 @@ export default function App() {
         }
       />
       <Route path="/employee" element={<Navigate to="/employee/dashboard" replace />} />
-      <Route
-        path="/admin/knowledge"
-        element={
-          <AdminRoute isAdmin={isAdmin} loading={loading} session={session}>
-            <KnowledgeBase lang={lang} setLang={setLang} session={session} onSignOut={handleSignOut} />
-          </AdminRoute>
-        }
-      />
       <Route
         path="/admin/*"
         element={
@@ -203,7 +190,5 @@ export default function App() {
         }
       />
     </Routes>
-    {showChatbot && <AIChatbot lang={lang} userId={session?.user?.id ?? null} />}
-    </>
   );
 }
