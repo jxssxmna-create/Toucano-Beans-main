@@ -24,7 +24,7 @@ export default function ProductList({
             </h3>
 
             {items.length === 0 ? (
-              <p className="text-sm text-slate-500 bg-white/60 border border-dashed border-slate-300 rounded-xl px-4 py-6 text-center">
+              <p className="text-sm text-slate-500 bg-[#FAF0DF]/70 border border-dashed border-slate-300 rounded-xl px-4 py-6 text-center">
                 {isAr ? 'لا توجد منتجات في هذه الفئة' : 'No products in this category yet'}
               </p>
             ) : (
@@ -34,7 +34,7 @@ export default function ProductList({
                   return (
                     <li
                       key={product.id}
-                      className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:items-center shadow-sm"
+                      className="bg-[#FAF0DF] border border-[#EADBCE] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:items-center shadow-sm"
                     >
                       <img
                         src={product.image_url || LOGO_SRC}
@@ -84,7 +84,7 @@ export default function ProductList({
                           type="button"
                           disabled={busy || index === 0}
                           onClick={() => onMoveUp(product, items[index - 1])}
-                          className="px-3 py-1.5 text-sm rounded-lg border border-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                          className="px-3 py-1.5 text-sm rounded-lg border border-[#EADBCE] disabled:opacity-40 hover:bg-slate-50"
                         >
                           {isAr ? '↑ أعلى' : '↑ Up'}
                         </button>
@@ -92,7 +92,7 @@ export default function ProductList({
                           type="button"
                           disabled={busy || index === items.length - 1}
                           onClick={() => onMoveDown(product, items[index + 1])}
-                          className="px-3 py-1.5 text-sm rounded-lg border border-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                          className="px-3 py-1.5 text-sm rounded-lg border border-[#EADBCE] disabled:opacity-40 hover:bg-slate-50"
                         >
                           {isAr ? '↓ أسفل' : '↓ Down'}
                         </button>

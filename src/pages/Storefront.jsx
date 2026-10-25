@@ -301,7 +301,7 @@ export default function Storefront({
       {/* Drawer — right side */}
       <div
         dir="ltr"
-        className={`fixed inset-y-0 right-0 w-64 bg-[#FAF0DF] border-l border-slate-300/60 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 w-64 bg-[#FAF0DF] border-l border-[#EADBCE] shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -518,7 +518,7 @@ export default function Storefront({
         {activePage === 'contact' && (
           <section className="w-full max-w-md text-center">
             <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6 text-black">{t.contactTitle}</h2>
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 space-y-6">
+            <div className="bg-[#FAF0DF] p-6 rounded-2xl shadow-sm border border-[#EADBCE] space-y-6">
               <div>
                 <span className="block text-xs font-semibold text-black/60 uppercase tracking-wider mb-1">
                   {t.officialEmail}
@@ -530,7 +530,7 @@ export default function Storefront({
                   toucanobeans@gmail.com
                 </a>
               </div>
-              <hr className="border-slate-200" />
+              <hr className="border-[#EADBCE]" />
               <div>
                 <span className="block text-xs font-semibold text-black/60 uppercase tracking-wider mb-1">
                   WhatsApp

@@ -42,7 +42,7 @@ function StampRow({ stamps }) {
         <span
           key={i}
           className={`w-2.5 h-2.5 rounded-full border ${
-            i < filled ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'bg-white border-slate-300'
+            i < filled ? 'bg-[#FF5F1F] border-[#FF5F1F]' : 'bg-[#FAF0DF] border-[#EADBCE]'
           }`}
         />
       ))}
@@ -90,7 +90,7 @@ function SubstitutePanel({ item, products, isAr, busy, onConfirm, onCancel }) {
         <select
           value={productId}
           onChange={(e) => setProductId(e.target.value)}
-          className="border border-slate-300 rounded-lg px-2 py-2 bg-white text-sm"
+          className="border border-[#EADBCE] rounded-lg px-2 py-2 bg-[#FAF0DF] text-sm"
         >
           {candidates.same.length > 0 && (
             <optgroup label={isAr ? 'نفس الفئة' : 'Same category'}>
@@ -117,7 +117,7 @@ function SubstitutePanel({ item, products, isAr, busy, onConfirm, onCancel }) {
           max={99}
           value={qty}
           onChange={(e) => setQty(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
-          className="border border-slate-300 rounded-lg px-2 py-2 text-sm"
+          className="border border-[#EADBCE] rounded-lg px-2 py-2 text-sm bg-[#FAF0DF]"
           aria-label={isAr ? 'الكمية' : 'Quantity'}
         />
       </div>
@@ -126,7 +126,7 @@ function SubstitutePanel({ item, products, isAr, busy, onConfirm, onCancel }) {
         onChange={(e) => setNote(e.target.value)}
         maxLength={200}
         placeholder={isAr ? 'ملاحظة للعميل (اختياري)' : 'Note for the customer (optional)'}
-        className="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm"
+        className="w-full border border-[#EADBCE] rounded-lg px-2 py-2 text-sm bg-[#FAF0DF]"
       />
       <div className="flex gap-2">
         <button
@@ -137,7 +137,7 @@ function SubstitutePanel({ item, products, isAr, busy, onConfirm, onCancel }) {
         >
           {isAr ? 'تأكيد الاستبدال' : 'Confirm swap'}
         </button>
-        <button type="button" onClick={onCancel} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold">
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 rounded-lg border border-[#EADBCE] text-sm font-semibold">
           {isAr ? 'إلغاء' : 'Cancel'}
         </button>
       </div>
@@ -167,7 +167,7 @@ function OrderCard({ order, productsById, products, loyalty, isAr, onAdjust }) {
   }
 
   return (
-    <article className={`bg-white border rounded-2xl p-4 shadow-sm ${outCount ? 'border-red-300' : 'border-slate-200'}`}>
+    <article className={`bg-[#FAF0DF] border rounded-2xl p-4 shadow-sm ${outCount ? 'border-red-300' : 'border-[#EADBCE]'}`}>
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-bold text-lg truncate">{order.customer_name || (isAr ? 'عميل' : 'Customer')}</p>
@@ -222,7 +222,7 @@ function OrderCard({ order, productsById, products, loyalty, isAr, onAdjust }) {
                       type="button"
                       disabled={busy}
                       onClick={() => run({ index, qty: Math.max(0, (item.qty || 1) - 1) })}
-                      className="w-7 h-7 rounded-lg border border-slate-300 font-bold disabled:opacity-40"
+                      className="w-7 h-7 rounded-lg border border-[#EADBCE] font-bold disabled:opacity-40"
                       aria-label={isAr ? 'إنقاص' : 'Decrease'}
                     >
                       −
@@ -235,7 +235,7 @@ function OrderCard({ order, productsById, products, loyalty, isAr, onAdjust }) {
                         type="button"
                         disabled={busy || (item.qty || 1) >= 99}
                         onClick={() => run({ index, qty: (item.qty || 1) + 1 })}
-                        className="w-7 h-7 rounded-lg border border-slate-300 font-bold disabled:opacity-40"
+                        className="w-7 h-7 rounded-lg border border-[#EADBCE] font-bold disabled:opacity-40"
                         aria-label={isAr ? 'زيادة' : 'Increase'}
                       >
                         +
@@ -422,7 +422,7 @@ export default function EmployeeDashboard({ session, profile, lang = 'en', setLa
 
   return (
     <div className="bg-[#FAF0DF] text-slate-900 min-h-screen font-serif" dir="ltr">
-      <header className="border-b border-slate-300/70 bg-[#FAF0DF]/90 backdrop-blur sticky top-0 z-20">
+      <header className="border-b border-[#EADBCE] bg-[#FAF0DF]/90 backdrop-blur sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Logo size="sm" className="shrink-0" />
@@ -446,7 +446,7 @@ export default function EmployeeDashboard({ session, profile, lang = 'en', setLa
             <button
               type="button"
               onClick={() => navigate('/employee/profile')}
-              className="px-3 py-2 text-sm rounded-lg bg-white border border-slate-300 font-semibold hover:border-[#FF5F1F]"
+              className="px-3 py-2 text-sm rounded-lg bg-[#FAF0DF] border border-[#EADBCE] font-semibold hover:border-[#FF5F1F]"
             >
               {isAr ? 'ملفي' : 'My Profile'}
             </button>
@@ -483,7 +483,7 @@ export default function EmployeeDashboard({ session, profile, lang = 'en', setLa
               type="button"
               onClick={() => setTab(t.id)}
               className={`px-4 py-2 rounded-lg text-sm font-bold border ${
-                tab === t.id ? 'bg-[#FF5F1F] text-white border-[#FF5F1F]' : 'bg-white border-slate-300 text-slate-800'
+                tab === t.id ? 'bg-[#FF5F1F] text-white border-[#FF5F1F]' : 'bg-[#FAF0DF] border-[#EADBCE] text-slate-800'
               }`}
             >
               {t.label}
@@ -504,7 +504,7 @@ export default function EmployeeDashboard({ session, profile, lang = 'en', setLa
                       type="button"
                       onClick={() => setStatusFilter(s)}
                       className={`px-3 py-1.5 rounded-full text-sm font-semibold border capitalize ${
-                        statusFilter === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-300'
+                        statusFilter === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-[#FAF0DF] border-[#EADBCE]'
                       }`}
                     >
                       {s}
@@ -543,8 +543,8 @@ export default function EmployeeDashboard({ session, profile, lang = 'en', setLa
                           return (
                             <li
                               key={p.id}
-                              className={`flex items-center justify-between gap-3 bg-white border rounded-xl px-4 py-3 ${
-                                inStock ? 'border-slate-200' : 'border-red-200 bg-red-50/40'
+                              className={`flex items-center justify-between gap-3 bg-[#FAF0DF] border rounded-xl px-4 py-3 ${
+                                inStock ? 'border-[#EADBCE]' : 'border-red-200 bg-red-50/40'
                               }`}
                             >
                               <div className="min-w-0">
@@ -583,7 +583,7 @@ export default function EmployeeDashboard({ session, profile, lang = 'en', setLa
             )}
 
             {tab === 'loyalty' && (
-              <section className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              <section className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl overflow-hidden">
                 {customers.length === 0 ? (
                   <p className="text-center py-12 text-slate-600">{isAr ? 'لا يوجد عملاء بعد' : 'No customers yet'}</p>
                 ) : (

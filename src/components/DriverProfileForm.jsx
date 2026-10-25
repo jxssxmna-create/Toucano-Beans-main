@@ -77,7 +77,7 @@ export default function DriverProfileForm({ session, lang = 'en' }) {
   return (
     <form
       onSubmit={save}
-      className="bg-white border border-slate-200 rounded-2xl p-5 shadow-md space-y-3 mb-6"
+      className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-md space-y-3 mb-6"
     >
       <div>
         <p className="text-xs font-black uppercase tracking-wider text-[#FF5500]">
@@ -103,19 +103,19 @@ export default function DriverProfileForm({ session, lang = 'en' }) {
         value={form.full_name}
         onChange={(e) => setForm({ ...form, full_name: e.target.value })}
         placeholder={isAr ? 'الاسم الكامل' : 'Full Name'}
-        className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+        className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
       />
       <input
         required
         value={form.phone_number}
         onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
         placeholder="+974XXXXXXXX"
-        className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+        className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
       />
       <select
         value={form.vehicle_type}
         onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })}
-        className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold bg-white"
+        className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
       >
         <option value="car">{isAr ? 'سيارة' : 'Car'}</option>
         <option value="bike">{isAr ? 'دراجة' : 'Bike'}</option>
@@ -125,7 +125,7 @@ export default function DriverProfileForm({ session, lang = 'en' }) {
         value={form.vehicle_plate}
         onChange={(e) => setForm({ ...form, vehicle_plate: e.target.value })}
         placeholder={isAr ? 'رقم لوحة المركبة' : 'Vehicle Plate Number'}
-        className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+        className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
       />
       <button
         type="submit"

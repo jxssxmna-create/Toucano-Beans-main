@@ -104,7 +104,7 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting, product
   const busy = submitting || translatingAll;
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-sm space-y-4" noValidate>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-lg font-bold text-slate-800">
           {editing ? (isAr ? `تعديل: ${product.name}` : `Edit: ${product.name}`) : isAr ? 'إضافة منتج' : 'Add Product'}
@@ -155,7 +155,7 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting, product
             {isAr ? 'الوزن / الحجم' : 'Weight / Size'}
           </label>
           <input
-            className="w-full border border-slate-300 rounded-lg px-3 py-2"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 bg-[#FAF0DF]"
             value={form.weight}
             onChange={(e) => set('weight')(e.target.value)}
             placeholder="250g"
@@ -175,7 +175,7 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting, product
             type="number"
             min="0"
             step="0.01"
-            className="w-full border border-slate-300 rounded-lg px-3 py-2"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 bg-[#FAF0DF]"
             value={form.price}
             onChange={(e) => set('price')(e.target.value)}
             disabled={busy}
@@ -185,7 +185,7 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting, product
         <div>
           <label className="block text-xs font-semibold uppercase text-slate-500 mb-1">{isAr ? 'الفئة' : 'Category'}</label>
           <select
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 bg-[#FAF0DF]"
             value={form.category}
             onChange={(e) => set('category')(e.target.value)}
             disabled={busy}
@@ -235,7 +235,7 @@ export default function ProductForm({ lang = 'en', onSubmit, submitting, product
           {submitting ? (isAr ? 'جاري الحفظ...' : 'Saving...') : editing ? (isAr ? 'حفظ التعديلات' : 'Save Changes') : isAr ? 'حفظ المنتج' : 'Save Product'}
         </button>
         {editing && onCancel && (
-          <button type="button" onClick={onCancel} className="px-5 py-2.5 rounded-lg border border-slate-300 font-semibold">
+          <button type="button" onClick={onCancel} className="px-5 py-2.5 rounded-lg border border-[#EADBCE] font-semibold">
             {isAr ? 'إلغاء' : 'Cancel'}
           </button>
         )}

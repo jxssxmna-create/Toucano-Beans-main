@@ -254,14 +254,14 @@ export default function AccountPage({ session, lang = 'en' }) {
         />
       )}
 
-      <form onSubmit={updateProfile} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3" noValidate>
+      <form onSubmit={updateProfile} className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-4 space-y-3" noValidate>
         <div>
           <label className="block text-xs font-black uppercase text-black/50 mb-1">Email</label>
           <input
             type="text"
             value={profile.email || session.user.email || ''}
             disabled
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 font-bold"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 bg-slate-50 font-bold"
           />
         </div>
         <div>
@@ -273,7 +273,7 @@ export default function AccountPage({ session, lang = 'en' }) {
             onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
             required
             disabled={saving}
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
           />
         </div>
         <div>
@@ -285,7 +285,7 @@ export default function AccountPage({ session, lang = 'en' }) {
             onChange={(e) => setProfile({ ...profile, phone_number: e.target.value })}
             required
             disabled={saving}
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
           />
         </div>
 
@@ -298,7 +298,7 @@ export default function AccountPage({ session, lang = 'en' }) {
               onChange={(e) => setProfile({ ...profile, [key]: e.target.value })}
               placeholder={key.replace('_', ' ')}
               disabled={saving}
-              className="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm font-bold"
+              className="w-full border border-[#EADBCE] rounded-lg px-2 py-2 text-sm font-bold bg-[#FAF0DF]"
             />
           ))}
         </div>
@@ -322,7 +322,7 @@ export default function AccountPage({ session, lang = 'en' }) {
         </button>
       </form>
 
-      <form onSubmit={saveAddress} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+      <form onSubmit={saveAddress} className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-4 space-y-3">
         <h3 className="font-black text-lg">
           {isAr ? 'عناوين محفوظة' : 'Saved Addresses'}
         </h3>
@@ -330,7 +330,7 @@ export default function AccountPage({ session, lang = 'en' }) {
           value={addrForm.label}
           onChange={(e) => setAddrForm({ ...addrForm, label: e.target.value })}
           placeholder={isAr ? 'مثلاً: المنزل، العمل، النادي' : 'Label e.g. Home, Work, Gym'}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+          className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
         />
         <div className="grid grid-cols-3 gap-2">
           {['building_number', 'street_number', 'zone_number'].map((key) => (
@@ -339,7 +339,7 @@ export default function AccountPage({ session, lang = 'en' }) {
               value={addrForm[key]}
               onChange={(e) => setAddrForm({ ...addrForm, [key]: e.target.value })}
               placeholder={key.replace('_', ' ')}
-              className="w-full border border-slate-300 rounded-lg px-2 py-2 text-sm font-bold"
+              className="w-full border border-[#EADBCE] rounded-lg px-2 py-2 text-sm font-bold bg-[#FAF0DF]"
             />
           ))}
         </div>
@@ -364,7 +364,7 @@ export default function AccountPage({ session, lang = 'en' }) {
           {addresses.map((a) => (
             <li
               key={a.id}
-              className="flex items-start justify-between gap-2 border border-slate-200 rounded-xl px-3 py-2"
+              className="flex items-start justify-between gap-2 border border-[#EADBCE] rounded-xl px-3 py-2"
             >
               <div className="min-w-0">
                 <p className="font-black truncate">{a.label}</p>
@@ -382,7 +382,7 @@ export default function AccountPage({ session, lang = 'en' }) {
         </ul>
       </form>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+      <div className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-4 space-y-3">
         <h3 className="font-black text-lg">{isAr ? 'سجل الطلبات' : 'Order History'}</h3>
         {orders.length === 0 ? (
           <p className="text-sm font-bold text-black/50">
@@ -391,7 +391,7 @@ export default function AccountPage({ session, lang = 'en' }) {
         ) : (
           <ul className="space-y-2">
             {orders.map((o) => (
-              <li key={o.id} className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold">
+              <li key={o.id} className="border border-[#EADBCE] rounded-xl px-3 py-2 text-sm font-bold">
                 <div className="flex justify-between gap-2">
                   <span className="text-[#FF5500]">{Number(o.total || 0).toFixed(2)} QAR</span>
                   <span className="capitalize text-black/50">{o.status}</span>

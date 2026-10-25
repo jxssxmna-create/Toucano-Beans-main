@@ -49,6 +49,13 @@ pre,
   font-synthesis: none;
 }
 
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+select,
+textarea {
+  background-color: #faf0df;
+  border-color: #eadbce;
+}
+
 img {
   max-width: 100%;
   height: auto;

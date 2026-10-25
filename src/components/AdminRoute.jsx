@@ -5,7 +5,7 @@ export default function AdminRoute({ isAdmin, loading, session, children }) {
 
   if (loading) {
     return (
-      <div className="bg-[#fdf0de] min-h-screen flex items-center justify-center text-slate-800">
+      <div className="bg-[#FAF0DF] min-h-screen flex items-center justify-center text-slate-800">
         Loading admin...
       </div>
     );

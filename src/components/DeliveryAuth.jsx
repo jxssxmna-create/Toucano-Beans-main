@@ -119,8 +119,8 @@ export default function DeliveryAuth({ lang = 'en' }) {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-md p-5 text-black">
-      <div className="flex rounded-lg overflow-hidden border border-slate-300 mb-4">
+    <div className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl shadow-md p-5 text-black">
+      <div className="flex rounded-lg overflow-hidden border border-[#EADBCE] mb-4">
         <button
           type="button"
           onClick={() => {
@@ -129,7 +129,7 @@ export default function DeliveryAuth({ lang = 'en' }) {
             setSuccess('');
           }}
           className={`flex-1 py-2 text-sm font-black ${
-            !isSignUp ? 'bg-[#FF5500] text-white' : 'bg-white text-black'
+            !isSignUp ? 'bg-[#FF5500] text-white' : 'bg-[#FAF0DF] text-black'
           }`}
         >
           {isAr ? 'دخول' : 'Login'}
@@ -142,7 +142,7 @@ export default function DeliveryAuth({ lang = 'en' }) {
             setSuccess('');
           }}
           className={`flex-1 py-2 text-sm font-black ${
-            isSignUp ? 'bg-[#FF5500] text-white' : 'bg-white text-black'
+            isSignUp ? 'bg-[#FF5500] text-white' : 'bg-[#FAF0DF] text-black'
           }`}
         >
           {isAr ? 'تسجيل' : 'Sign Up'}
@@ -178,7 +178,7 @@ export default function DeliveryAuth({ lang = 'en' }) {
               onChange={(e) => setFullName(e.target.value)}
               required={isSignUp}
               disabled={loading}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+              className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
               placeholder="Driver Name"
               autoComplete="name"
             />
@@ -195,7 +195,7 @@ export default function DeliveryAuth({ lang = 'en' }) {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
             placeholder="driver@deliver.com"
             autoComplete="email"
           />
@@ -212,7 +212,7 @@ export default function DeliveryAuth({ lang = 'en' }) {
             required
             minLength={6}
             disabled={loading}
-            className="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold"
+            className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 font-bold bg-[#FAF0DF]"
             placeholder="••••••••"
             autoComplete={isSignUp ? 'new-password' : 'current-password'}
           />

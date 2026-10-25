@@ -49,7 +49,7 @@ export default function LoyaltyCard({ stamps = 0, vouchers = 0, lang = 'en' }) {
   const filled = Math.min(STAMPS, Math.max(0, Number(stamps) || 0));
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3 font-sans">
+    <div className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-4 shadow-sm space-y-3 font-sans">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p

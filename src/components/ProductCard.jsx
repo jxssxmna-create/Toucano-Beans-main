@@ -24,8 +24,8 @@ export default function ProductCard({
   return (
     <div
       dir="ltr"
-      className={`bg-white p-5 rounded-2xl shadow border transition text-center ${
-        expanded ? 'border-[#FF5F1F] shadow-md' : 'border-slate-200 hover:border-[#FF5F1F]/40'
+      className={`bg-[#FAF0DF] p-5 rounded-2xl shadow-sm border border-[#EADBCE] transition text-center ${
+        expanded ? 'border-[#FF5F1F] shadow-md' : 'border-[#EADBCE] hover:border-[#FF5F1F]/40'
       }`}
     >
       <button
@@ -82,7 +82,7 @@ export default function ProductCard({
           expanded ? 'max-h-[1200px] opacity-100 mt-4' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="border-t border-slate-200 pt-4 space-y-3 text-left">
+        <div className="border-t border-[#EADBCE] pt-4 space-y-3 text-left">
           {weight && (
             <div>
               <p dir={dir} className="text-xs font-semibold uppercase tracking-wide text-black/45 mb-1 text-left">

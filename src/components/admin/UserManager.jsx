@@ -111,14 +111,14 @@ export default function UserManager({ lang = 'en' }) {
         type={type}
         value={edit[key] ?? ''}
         onChange={(e) => setEdit({ ...edit, [key]: e.target.value })}
-        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold"
+        className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-bold bg-[#FAF0DF]"
         disabled={saving}
       />
     </div>
   );
 
   return (
-    <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+    <section className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-sm space-y-4">
       <div>
         <p className="text-xs font-black uppercase tracking-wider text-[#FF5500]">
           {isAr ? 'المستخدمون' : 'Users'}
@@ -149,7 +149,7 @@ export default function UserManager({ lang = 'en' }) {
                   type="button"
                   onClick={() => openUser(u)}
                   className={`w-full text-start border rounded-xl px-3 py-2 font-bold hover:border-[#FF5500] ${
-                    selected?.id === u.id ? 'border-[#FF5500] bg-orange-50' : 'border-slate-200'
+                    selected?.id === u.id ? 'border-[#FF5500] bg-orange-50' : 'border-[#EADBCE]'
                   }`}
                 >
                   <span className="text-xs uppercase text-[#FF5500]">{u.role}</span>
@@ -161,7 +161,7 @@ export default function UserManager({ lang = 'en' }) {
           </ul>
 
           {selected ? (
-            <div className="space-y-3 border border-slate-200 rounded-xl p-3">
+            <div className="space-y-3 border border-[#EADBCE] rounded-xl p-3">
               {field('full_name', isAr ? 'الاسم' : 'Name')}
               {field('email', isAr ? 'البريد' : 'Email', 'email')}
               {field('phone_number', isAr ? 'الهاتف' : 'Phone')}
@@ -174,7 +174,7 @@ export default function UserManager({ lang = 'en' }) {
                     <select
                       value={edit.vehicle_type || ''}
                       onChange={(e) => setEdit({ ...edit, vehicle_type: e.target.value })}
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold bg-white"
+                      className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-bold bg-[#FAF0DF]"
                     >
                       <option value="">—</option>
                       <option value="car">{isAr ? 'سيارة' : 'Car'}</option>
@@ -223,7 +223,7 @@ export default function UserManager({ lang = 'en' }) {
                 ) : (
                   <ul className="space-y-2 max-h-48 overflow-y-auto text-sm">
                     {orders.map((o) => (
-                      <li key={o.id} className="border border-slate-200 rounded-lg px-2 py-1.5 font-bold">
+                      <li key={o.id} className="border border-[#EADBCE] rounded-lg px-2 py-1.5 font-bold">
                         <span className="text-[#FF5500]">{Number(o.total).toFixed(2)} QAR</span>
                         {' · '}
                         {new Date(o.created_at).toLocaleDateString()}

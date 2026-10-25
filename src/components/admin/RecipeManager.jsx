@@ -1,22 +1,61 @@
-import { useEffect, useState } from 'react';
-import { createRecipe, deleteRecipe, fetchRecipes, updateRecipe } from '../../lib/commerceApi';
-import { translateFields } from '../../lib/translateApi';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  deleteBrewRecipe,
+  deleteEquipment,
+  deleteRecipeMethod,
+  fetchBrewRecipes,
+  fetchEquipment,
+  fetchRecipeMethods,
+  slugify,
+  upsertBrewRecipe,
+  upsertEquipment,
+  upsertRecipeMethod,
+} from '../../lib/brewApi';
 import BilingualField from './BilingualField';
 
-const EMPTY = { id: null, title: '', title_ar: '', body: '', body_ar: '', image_url: '' };
+const CARD = 'bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-sm space-y-4';
+const FIELD = 'w-full border border-[#EADBCE] rounded-lg px-3 py-2 bg-[#FAF0DF] focus:outline-none focus:border-[#FF5F1F]';
+const EMPTY_EQ = { id: null, name: '', name_ar: '', slug: '', sort_order: 0, is_active: true };
+const EMPTY_METHOD = { id: null, name: '', name_ar: '', slug: '', show_calculator: false, sort_order: 0, is_active: true };
+const EMPTY_RECIPE = {
+  id: null,
+  equipment_id: '',
+  method_id: '',
+  default_ratio: 15,
+  default_dose_g: 15,
+  ratio_min: 12,
+  ratio_max: 18,
+  dose_min: 8,
+  dose_max: 40,
+  iced_hot_share: 0.6,
+  grind_en: '',
+  grind_ar: '',
+  steps_hot_en: '',
+  steps_hot_ar: '',
+  steps_iced_en: '',
+  steps_iced_ar: '',
+  is_active: true,
+  display_order: 0,
+};
 
 export default function RecipeManager({ lang = 'en', userId }) {
   const isAr = lang === 'ar';
+  const [tab, setTab] = useState('equipment');
+  const [equipment, setEquipment] = useState([]);
+  const [methods, setMethods] = useState([]);
   const [recipes, setRecipes] = useState([]);
-  const [form, setForm] = useState(null);
+  const [eqForm, setEqForm] = useState(null);
+  const [methodForm, setMethodForm] = useState(null);
+  const [recipeForm, setRecipeForm] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [translatingAll, setTranslatingAll] = useState(false);
   const [message, setMessage] = useState(null);
-  const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
   async function load() {
     try {
-      setRecipes(await fetchRecipes());
+      const [eq, m, r] = await Promise.all([fetchEquipment(), fetchRecipeMethods(), fetchBrewRecipes()]);
+      setEquipment(eq);
+      setMethods(m);
+      setRecipes(r);
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
     }
@@ -26,55 +65,18 @@ export default function RecipeManager({ lang = 'en', userId }) {
     load();
   }, []);
 
-  async function translateAll() {
-    const fields = {};
-    if (form.title.trim()) fields.title = form.title;
-    if (form.body.trim()) fields.body = form.body;
-    if (!Object.keys(fields).length) return;
-    if (
-      (form.title_ar.trim() || form.body_ar.trim()) &&
-      !window.confirm(isAr ? 'استبدال النصوص العربية الحالية؟' : 'Replace the existing Arabic text?')
-    ) {
-      return;
-    }
-    setTranslatingAll(true);
-    setMessage(null);
-    try {
-      const out = await translateFields(fields, { source: 'en', target: 'ar', context: 'coffee brewing recipe steps' });
-      setForm((f) => ({ ...f, title_ar: out.title ?? f.title_ar, body_ar: out.body ?? f.body_ar }));
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message });
-    } finally {
-      setTranslatingAll(false);
-    }
-  }
+  const eqById = useMemo(() => Object.fromEntries(equipment.map((e) => [e.id, e])), [equipment]);
+  const methodById = useMemo(() => Object.fromEntries(methods.map((m) => [m.id, m])), [methods]);
 
-  async function handleSave(e) {
+  async function saveEq(e) {
     e.preventDefault();
-    if (!form.title.trim()) {
-      setMessage({ type: 'error', text: isAr ? 'العنوان بالإنجليزية مطلوب' : 'English title is required' });
-      return;
-    }
+    if (!eqForm.name.trim()) return;
     setBusy(true);
     setMessage(null);
-    const payload = {
-      title: form.title.trim(),
-      title_ar: form.title_ar.trim() || null,
-      body: form.body.trim(),
-      body_ar: form.body_ar.trim() || null,
-      image_url: form.image_url.trim() || null,
-    };
     try {
-      if (form.id) {
-        await updateRecipe(form.id, payload);
-      } else {
-        await createRecipe({ ...payload, display_order: recipes.length, created_by: userId || null });
-      }
-      setForm(null);
-      setMessage({
-        type: 'success',
-        text: form.id ? (isAr ? 'تم تحديث الوصفة' : 'Recipe updated') : isAr ? 'تمت إضافة الوصفة' : 'Recipe added',
-      });
+      await upsertEquipment({ ...eqForm, slug: eqForm.slug || slugify(eqForm.name) });
+      setEqForm(null);
+      setMessage({ type: 'success', text: isAr ? 'تم حفظ المطحنة' : 'Equipment saved' });
       await load();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -83,139 +85,370 @@ export default function RecipeManager({ lang = 'en', userId }) {
     }
   }
 
-  async function handleDelete(id) {
-    if (!window.confirm(isAr ? 'حذف الوصفة؟' : 'Delete this recipe?')) return;
+  async function saveMethod(e) {
+    e.preventDefault();
+    if (!methodForm.name.trim()) return;
+    setBusy(true);
+    setMessage(null);
     try {
-      await deleteRecipe(id);
-      setRecipes((prev) => prev.filter((r) => r.id !== id));
-      if (form?.id === id) setForm(null);
+      await upsertRecipeMethod({ ...methodForm, slug: methodForm.slug || slugify(methodForm.name) });
+      setMethodForm(null);
+      setMessage({ type: 'success', text: isAr ? 'تم حفظ الطريقة' : 'Method saved' });
+      await load();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
+    } finally {
+      setBusy(false);
     }
   }
 
-  const disabled = busy || translatingAll;
+  async function saveRecipe(e) {
+    e.preventDefault();
+    if (!recipeForm.equipment_id || !recipeForm.method_id) {
+      setMessage({ type: 'error', text: isAr ? 'اختر المطحنة والطريقة' : 'Pick equipment and a method' });
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      await upsertBrewRecipe(
+        {
+          ...recipeForm,
+          equipment_name: eqById[recipeForm.equipment_id]?.name,
+          method_name: methodById[recipeForm.method_id]?.name,
+        },
+        { userId }
+      );
+      setRecipeForm(null);
+      setMessage({ type: 'success', text: isAr ? 'تم حفظ الوصفة' : 'Recipe saved' });
+      await load();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const tabs = [
+    { id: 'equipment', label: isAr ? 'المطاحن' : 'Equipment' },
+    { id: 'methods', label: isAr ? 'الطرق' : 'Methods' },
+    { id: 'recipes', label: isAr ? 'الوصفات' : 'Brew recipes' },
+  ];
 
   return (
-    <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-black uppercase tracking-wider text-[#FF5500]">{isAr ? 'الوصفات' : 'Recipes'}</p>
-          <h2 className="text-2xl font-black">{isAr ? 'منشئ وصفات القهوة' : 'Coffee Recipe Builder'}</h2>
-        </div>
-        <button
-          type="button"
-          onClick={() => setForm(form ? null : { ...EMPTY })}
-          className="px-4 py-2 rounded-lg bg-[#FF5500] text-white font-black"
-        >
-          {form ? (isAr ? 'إغلاق' : 'Close') : '+ ' + (isAr ? 'إضافة وصفة' : 'Add Recipe')}
-        </button>
+    <section className={CARD}>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#FF5F1F]">
+          {isAr ? 'التحضير' : 'Brew guide'}
+        </p>
+        <h2 className="text-2xl font-bold">{isAr ? 'المعدات والوصفات' : 'Equipment & Recipes'}</h2>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
+              tab === t.id ? 'bg-[#FF5F1F] text-white border-[#FF5F1F]' : 'bg-[#FAF0DF] border-[#EADBCE]'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {message && (
         <div
-          className={`text-sm font-bold rounded-lg px-3 py-2 ${
-            message.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'
+          className={`text-sm font-semibold rounded-lg px-3 py-2 border ${
+            message.type === 'error'
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
           }`}
         >
           {message.text}
         </div>
       )}
 
-      {form && (
-        <form onSubmit={handleSave} className="space-y-4 border border-slate-200 rounded-xl p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-bold">
-              {form.id ? (isAr ? 'تعديل الوصفة' : 'Edit Recipe') : isAr ? 'وصفة جديدة' : 'New Recipe'}
-            </h3>
-            <button
-              type="button"
-              onClick={translateAll}
-              disabled={disabled || (!form.title.trim() && !form.body.trim())}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white disabled:opacity-40"
-            >
-              {translatingAll ? '…' : isAr ? 'ترجمة الكل إلى العربية' : 'Auto-Translate all → Arabic'}
-            </button>
-          </div>
-
-          <BilingualField
-            label={isAr ? 'عنوان الوصفة' : 'Recipe Title'}
-            valueEn={form.title}
-            valueAr={form.title_ar}
-            onChangeEn={set('title')}
-            onChangeAr={set('title_ar')}
-            required
-            disabled={disabled}
-            context="coffee recipe title"
-            uiLang={lang}
+      {tab === 'equipment' && (
+        <Panel
+          isAr={isAr}
+          addLabel={isAr ? 'إضافة مطحنة' : 'Add grinder'}
+          open={!!eqForm}
+          onToggle={() => setEqForm(eqForm ? null : { ...EMPTY_EQ, sort_order: equipment.length + 1 })}
+        >
+          {eqForm && (
+            <form onSubmit={saveEq} className="space-y-3 border border-[#EADBCE] rounded-xl p-4">
+              <BilingualField
+                label={isAr ? 'اسم المطحنة' : 'Grinder name'}
+                valueEn={eqForm.name}
+                valueAr={eqForm.name_ar}
+                onChangeEn={(v) => setEqForm((f) => ({ ...f, name: v }))}
+                onChangeAr={(v) => setEqForm((f) => ({ ...f, name_ar: v }))}
+                required
+                disabled={busy}
+                context="coffee grinder name"
+                uiLang={lang}
+              />
+              <label className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={eqForm.is_active}
+                  onChange={(e) => setEqForm((f) => ({ ...f, is_active: e.target.checked }))}
+                />
+                {isAr ? 'ظاهر في الموقع' : 'Visible on storefront'}
+              </label>
+              <button type="submit" disabled={busy} className="bg-slate-900 text-white font-semibold px-4 py-2 rounded-lg">
+                {isAr ? 'حفظ' : 'Save'}
+              </button>
+            </form>
+          )}
+          <RowList
+            items={equipment}
+            isAr={isAr}
+            title={(e) => e.name}
+            subtitle={(e) => e.name_ar}
+            onEdit={(e) => setEqForm({ ...e })}
+            onDelete={async (id) => {
+              if (!window.confirm(isAr ? 'حذف المطحنة ووصفاتها؟' : 'Delete this grinder and its recipes?')) return;
+              await deleteEquipment(id);
+              await load();
+            }}
           />
-          <BilingualField
-            label={isAr ? 'خطوات التحضير' : 'Recipe Steps'}
-            valueEn={form.body}
-            valueAr={form.body_ar}
-            onChangeEn={set('body')}
-            onChangeAr={set('body_ar')}
-            multiline
-            disabled={disabled}
-            context="coffee brewing recipe steps"
-            uiLang={lang}
-          />
-          <input
-            value={form.image_url}
-            onChange={(e) => set('image_url')(e.target.value)}
-            placeholder="https://… image URL"
-            className="w-full border border-slate-300 rounded-lg px-3 py-2"
-            disabled={disabled}
-          />
-          <button type="submit" disabled={disabled} className="bg-slate-900 text-white font-black px-4 py-2 rounded-lg disabled:opacity-60">
-            {busy ? (isAr ? 'جارٍ...' : 'Saving...') : form.id ? (isAr ? 'حفظ التعديلات' : 'Save Changes') : isAr ? 'نشر' : 'Publish'}
-          </button>
-        </form>
+        </Panel>
       )}
 
-      <ul className="space-y-2">
-        {recipes.map((r) => (
-          <li key={r.id} className="flex items-start justify-between gap-3 border border-slate-200 rounded-xl px-3 py-2">
-            <div className="min-w-0">
-              <p className="font-black truncate">
-                {r.title}
-                {r.title_ar && (
-                  <span className="ms-2 font-medium text-slate-500" dir="rtl">
-                    · {r.title_ar}
-                  </span>
-                )}
+      {tab === 'methods' && (
+        <Panel
+          isAr={isAr}
+          addLabel={isAr ? 'إضافة طريقة' : 'Add method'}
+          open={!!methodForm}
+          onToggle={() => setMethodForm(methodForm ? null : { ...EMPTY_METHOD, sort_order: methods.length + 1 })}
+        >
+          {methodForm && (
+            <form onSubmit={saveMethod} className="space-y-3 border border-[#EADBCE] rounded-xl p-4">
+              <BilingualField
+                label={isAr ? 'اسم الطريقة' : 'Method name'}
+                valueEn={methodForm.name}
+                valueAr={methodForm.name_ar}
+                onChangeEn={(v) => setMethodForm((f) => ({ ...f, name: v }))}
+                onChangeAr={(v) => setMethodForm((f) => ({ ...f, name_ar: v }))}
+                required
+                disabled={busy}
+                context="coffee brew method name"
+                uiLang={lang}
+              />
+              <label className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={methodForm.show_calculator}
+                  onChange={(e) => setMethodForm((f) => ({ ...f, show_calculator: e.target.checked }))}
+                />
+                {isAr ? 'إظهار حاسبة النسبة (مثل V60)' : 'Show ratio calculator (pour-over)'}
+              </label>
+              <label className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={methodForm.is_active}
+                  onChange={(e) => setMethodForm((f) => ({ ...f, is_active: e.target.checked }))}
+                />
+                {isAr ? 'ظاهر في الموقع' : 'Visible on storefront'}
+              </label>
+              <button type="submit" disabled={busy} className="bg-slate-900 text-white font-semibold px-4 py-2 rounded-lg">
+                {isAr ? 'حفظ' : 'Save'}
+              </button>
+            </form>
+          )}
+          <RowList
+            items={methods}
+            isAr={isAr}
+            title={(m) => m.name}
+            subtitle={(m) => `${m.name_ar || ''}${m.show_calculator ? ' · calculator' : ''}`}
+            onEdit={(m) => setMethodForm({ ...m })}
+            onDelete={async (id) => {
+              if (!window.confirm(isAr ? 'حذف الطريقة ووصفاتها؟' : 'Delete this method and its recipes?')) return;
+              await deleteRecipeMethod(id);
+              await load();
+            }}
+          />
+        </Panel>
+      )}
+
+      {tab === 'recipes' && (
+        <Panel
+          isAr={isAr}
+          addLabel={isAr ? 'إضافة وصفة' : 'Add brew recipe'}
+          open={!!recipeForm}
+          onToggle={() =>
+            setRecipeForm(
+              recipeForm
+                ? null
+                : { ...EMPTY_RECIPE, equipment_id: equipment[0]?.id || '', method_id: methods[0]?.id || '' }
+            )
+          }
+        >
+          {recipeForm && (
+            <form onSubmit={saveRecipe} className="space-y-3 border border-[#EADBCE] rounded-xl p-4">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <label className="block space-y-1 text-sm font-semibold">
+                  <span>{isAr ? 'المطحنة' : 'Equipment'}</span>
+                  <select
+                    className={FIELD}
+                    value={recipeForm.equipment_id}
+                    onChange={(e) => setRecipeForm((f) => ({ ...f, equipment_id: e.target.value }))}
+                  >
+                    {equipment.map((eq) => (
+                      <option key={eq.id} value={eq.id}>{eq.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block space-y-1 text-sm font-semibold">
+                  <span>{isAr ? 'الطريقة' : 'Method'}</span>
+                  <select
+                    className={FIELD}
+                    value={recipeForm.method_id}
+                    onChange={(e) => setRecipeForm((f) => ({ ...f, method_id: e.target.value }))}
+                  >
+                    {methods.map((m) => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Num label={isAr ? 'النسبة 1:؟' : 'Ratio 1:'} value={recipeForm.default_ratio} onChange={(v) => setRecipeForm((f) => ({ ...f, default_ratio: v }))} />
+                <Num label={isAr ? 'الجرعة غ' : 'Dose g'} value={recipeForm.default_dose_g} onChange={(v) => setRecipeForm((f) => ({ ...f, default_dose_g: v }))} />
+                <Num label={isAr ? 'نسبة المثلج (0.6)' : 'Iced hot share'} value={recipeForm.iced_hot_share} step="0.05" onChange={(v) => setRecipeForm((f) => ({ ...f, iced_hot_share: v }))} />
+                <Num label={isAr ? 'الترتيب' : 'Order'} value={recipeForm.display_order} onChange={(v) => setRecipeForm((f) => ({ ...f, display_order: v }))} />
+              </div>
+              <p className="text-xs text-black/50 font-medium">
+                {isAr
+                  ? 'استخدم {coffee} {hotWater} {ice} {bloom} {mid} {totalWater} {ratio} في الخطوات.'
+                  : 'Tokens in steps: {coffee} {hotWater} {ice} {bloom} {mid} {totalWater} {ratio}'}
               </p>
-              <p className="text-xs text-slate-500 line-clamp-2 font-bold">{r.body}</p>
-              {!r.body_ar && r.body && (
-                <span className="inline-block mt-1 text-[11px] font-semibold text-amber-700 bg-amber-50 rounded-full px-2 py-0.5">
-                  {isAr ? 'بدون ترجمة عربية' : 'No Arabic steps'}
-                </span>
-              )}
-            </div>
-            <div className="flex gap-3 shrink-0 text-sm font-black">
-              <button
-                type="button"
-                onClick={() =>
-                  setForm({
-                    id: r.id,
-                    title: r.title || '',
-                    title_ar: r.title_ar || '',
-                    body: r.body || '',
-                    body_ar: r.body_ar || '',
-                    image_url: r.image_url || '',
-                  })
-                }
-                className="text-[#FF5500]"
-              >
-                {isAr ? 'تعديل' : 'Edit'}
+              <BilingualField
+                label={isAr ? 'درجة الطحن' : 'Grind setting'}
+                valueEn={recipeForm.grind_en}
+                valueAr={recipeForm.grind_ar}
+                onChangeEn={(v) => setRecipeForm((f) => ({ ...f, grind_en: v }))}
+                onChangeAr={(v) => setRecipeForm((f) => ({ ...f, grind_ar: v }))}
+                disabled={busy}
+                context="coffee grind setting"
+                uiLang={lang}
+              />
+              <BilingualField
+                label={isAr ? 'خطوات ساخن' : 'Hot steps'}
+                valueEn={recipeForm.steps_hot_en}
+                valueAr={recipeForm.steps_hot_ar}
+                onChangeEn={(v) => setRecipeForm((f) => ({ ...f, steps_hot_en: v }))}
+                onChangeAr={(v) => setRecipeForm((f) => ({ ...f, steps_hot_ar: v }))}
+                multiline
+                disabled={busy}
+                context="hot coffee brew recipe steps"
+                uiLang={lang}
+              />
+              <BilingualField
+                label={isAr ? 'خطوات بارد / مثلج' : 'Iced / cold steps'}
+                valueEn={recipeForm.steps_iced_en}
+                valueAr={recipeForm.steps_iced_ar}
+                onChangeEn={(v) => setRecipeForm((f) => ({ ...f, steps_iced_en: v }))}
+                onChangeAr={(v) => setRecipeForm((f) => ({ ...f, steps_iced_ar: v }))}
+                multiline
+                disabled={busy}
+                context="iced coffee brew recipe steps"
+                uiLang={lang}
+              />
+              <label className="flex items-center gap-2 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={recipeForm.is_active}
+                  onChange={(e) => setRecipeForm((f) => ({ ...f, is_active: e.target.checked }))}
+                />
+                {isAr ? 'ظاهر في الموقع' : 'Visible on storefront'}
+              </label>
+              <button type="submit" disabled={busy} className="bg-slate-900 text-white font-semibold px-4 py-2 rounded-lg">
+                {isAr ? 'حفظ الوصفة' : 'Save recipe'}
               </button>
-              <button type="button" onClick={() => handleDelete(r.id)} className="text-red-600">
-                {isAr ? 'حذف' : 'Delete'}
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </form>
+          )}
+          <RowList
+            items={recipes}
+            isAr={isAr}
+            title={(r) => `${eqById[r.equipment_id]?.name || '?'} · ${methodById[r.method_id]?.name || '?'}`}
+            subtitle={(r) => `1:${r.default_ratio} · ${r.default_dose_g}g`}
+            onEdit={(r) =>
+              setRecipeForm({
+                ...EMPTY_RECIPE,
+                ...r,
+                grind_en: r.grind_en || '',
+                grind_ar: r.grind_ar || '',
+                steps_hot_en: r.steps_hot_en || '',
+                steps_hot_ar: r.steps_hot_ar || '',
+                steps_iced_en: r.steps_iced_en || '',
+                steps_iced_ar: r.steps_iced_ar || '',
+              })
+            }
+            onDelete={async (id) => {
+              if (!window.confirm(isAr ? 'حذف الوصفة؟' : 'Delete this recipe?')) return;
+              await deleteBrewRecipe(id);
+              await load();
+            }}
+          />
+        </Panel>
+      )}
     </section>
+  );
+}
+
+function Panel({ children, addLabel, open, onToggle }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <button type="button" onClick={onToggle} className="px-4 py-2 rounded-lg bg-[#FF5F1F] text-white font-semibold">
+          {open ? '×' : `+ ${addLabel}`}
+        </button>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function RowList({ items, title, subtitle, onEdit, onDelete, isAr }) {
+  return (
+    <ul className="space-y-2">
+      {items.map((item) => (
+        <li key={item.id} className="flex items-start justify-between gap-3 border border-[#EADBCE] rounded-xl px-3 py-2">
+          <div className="min-w-0">
+            <p className="font-semibold truncate">
+              {title(item)}
+              {item.is_active === false && (
+                <span className="ms-2 text-[11px] font-medium text-amber-700">{isAr ? 'مخفي' : 'hidden'}</span>
+              )}
+            </p>
+            {subtitle && <p className="text-xs text-black/50 font-medium">{subtitle(item)}</p>}
+          </div>
+          <div className="flex gap-3 shrink-0 text-sm font-semibold">
+            <button type="button" onClick={() => onEdit(item)} className="text-[#FF5F1F]">{isAr ? 'تعديل' : 'Edit'}</button>
+            <button type="button" onClick={() => onDelete(item.id)} className="text-red-600">{isAr ? 'حذف' : 'Delete'}</button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Num({ label, value, onChange, step = '1' }) {
+  return (
+    <label className="block space-y-1 text-sm font-semibold">
+      <span>{label}</span>
+      <input
+        type="number"
+        step={step}
+        value={value}
+        onChange={(e) => onChange(step === '1' ? Number(e.target.value) : Number(e.target.value))}
+        className={FIELD}
+      />
+    </label>
   );
 }

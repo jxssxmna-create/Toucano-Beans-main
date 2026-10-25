@@ -27,7 +27,7 @@ export default function CartDrawer({ lang = 'en' }) {
 
       <div
         dir="ltr"
-        className={`fixed inset-y-0 left-0 w-[min(100%,22rem)] bg-[#FAF0DF] border-r border-slate-300/60 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed inset-y-0 left-0 w-[min(100%,22rem)] bg-[#FAF0DF] border-r border-[#EADBCE] shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isCartOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="dialog"
@@ -35,7 +35,7 @@ export default function CartDrawer({ lang = 'en' }) {
         aria-label={isAr ? 'سلة التسوق' : 'Shopping cart'}
       >
         <div className="flex flex-col h-full font-sans">
-          <div className="flex items-center justify-between px-4 py-4 border-b border-slate-300/70">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-[#EADBCE]">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[#FF5F1F]">
                 {isAr ? 'السلة' : 'Cart'}
@@ -48,7 +48,7 @@ export default function CartDrawer({ lang = 'en' }) {
             <button
               type="button"
               onClick={closeCart}
-              className="w-9 h-9 rounded-full border border-slate-300 font-semibold text-black hover:text-[#FF5F1F]"
+              className="w-9 h-9 rounded-full border border-[#EADBCE] font-semibold text-black hover:text-[#FF5F1F]"
               aria-label={isAr ? 'إغلاق' : 'Close'}
             >
               ×
@@ -64,7 +64,7 @@ export default function CartDrawer({ lang = 'en' }) {
               lines.map(({ product, qty, lineTotal }) => (
                 <div
                   key={product.id}
-                  className="flex gap-3 bg-white border border-slate-200 rounded-xl p-3"
+                  className="flex gap-3 bg-[#FAF0DF] border border-[#EADBCE] rounded-xl p-3"
                 >
                   <img
                     src={product.image_url || LOGO_SRC}
@@ -96,7 +96,7 @@ export default function CartDrawer({ lang = 'en' }) {
             )}
           </div>
 
-          <div className="border-t border-slate-300/70 px-4 py-4 space-y-3 bg-[#FAF0DF]">
+          <div className="border-t border-[#EADBCE] px-4 py-4 space-y-3 bg-[#FAF0DF]">
             <div className="flex justify-between text-sm font-semibold">
               <span>{isAr ? 'المجموع الفرعي' : 'Subtotal'}</span>
               <span className="text-[#FF5F1F]">{subtotal.toFixed(2)} QAR</span>

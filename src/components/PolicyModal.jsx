@@ -79,11 +79,11 @@ export default function PolicyModal({ type, lang = 'en', onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="policy-modal-title"
-        className="bg-[#fdf0de] text-black w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 max-h-[85vh] overflow-y-auto"
+        className="bg-[#FAF0DF] text-black w-full max-w-lg rounded-2xl shadow-2xl border border-[#EADBCE] max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         dir="ltr"
       >
-        <div className="sticky top-0 bg-[#fdf0de] border-b border-slate-200 px-5 py-4 flex items-center justify-between gap-3">
+        <div className="sticky top-0 bg-[#FAF0DF] border-b border-[#EADBCE] px-5 py-4 flex items-center justify-between gap-3">
           <h2 id="policy-modal-title" dir={isAr ? 'rtl' : 'ltr'} className="text-xl font-black text-left">
             {copy.title}
           </h2>

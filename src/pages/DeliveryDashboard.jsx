@@ -10,7 +10,7 @@ export default function DeliveryDashboard({ lang, setLang, session, onSignOut })
 
   return (
     <div className="bg-[#FAF0DF] text-black min-h-screen font-serif" dir="ltr">
-      <header className="border-b border-slate-300/70 bg-[#FAF0DF]/90 backdrop-blur sticky top-0 z-20">
+      <header className="border-b border-[#EADBCE] bg-[#FAF0DF]/90 backdrop-blur sticky top-0 z-20">
         <div className="max-w-3xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Logo size="sm" className="shrink-0" />

@@ -240,7 +240,7 @@ export default function CheckoutPage({
 
   return (
     <div className="bg-[#FAF0DF] text-black min-h-screen font-serif" dir="ltr">
-      <header className="border-b border-slate-300/70 bg-[#FAF0DF]/95 sticky top-0 z-20">
+      <header className="border-b border-[#EADBCE] bg-[#FAF0DF]/95 sticky top-0 z-20">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <Logo size="sm" className="shrink-0" />
@@ -275,7 +275,7 @@ export default function CheckoutPage({
         )}
 
         {/* Top box — customer & delivery */}
-        <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+        <section className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-sm space-y-4">
           <h2 className="text-xl font-serif font-black">
             {isAr ? 'بيانات العميل والتوصيل' : 'Customer & Delivery Details'}
           </h2>
@@ -288,7 +288,7 @@ export default function CheckoutPage({
               <input
                 value={customer.full_name}
                 onChange={(e) => setCustomer({ ...customer, full_name: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium"
+                className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-medium bg-[#FAF0DF]"
               />
             </div>
             <div>
@@ -299,7 +299,7 @@ export default function CheckoutPage({
                 value={customer.phone_number}
                 onChange={(e) => setCustomer({ ...customer, phone_number: e.target.value })}
                 placeholder="+974XXXXXXXX"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium"
+                className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-medium bg-[#FAF0DF]"
               />
             </div>
             <div>
@@ -310,7 +310,7 @@ export default function CheckoutPage({
                 type="email"
                 value={customer.email}
                 disabled
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium bg-slate-50"
+                className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-medium bg-slate-50"
               />
             </div>
           </div>
@@ -323,7 +323,7 @@ export default function CheckoutPage({
               <select
                 value={addressId}
                 onChange={(e) => setAddressId(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium bg-white"
+                className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-medium bg-[#FAF0DF]"
               >
                 {addresses.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -341,12 +341,12 @@ export default function CheckoutPage({
                 + {isAr ? 'إضافة موقع جديد' : 'Add a new location'}
               </button>
             ) : (
-              <div className="space-y-3 border border-slate-200 rounded-xl p-3">
+              <div className="space-y-3 border border-[#EADBCE] rounded-xl p-3">
                 <input
                   value={newAddr.label}
                   onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
                   placeholder={isAr ? 'مثلاً: المنزل، العمل' : 'Label e.g. Home, Work'}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium"
+                  className="w-full border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-medium bg-[#FAF0DF]"
                 />
                 <div className="grid grid-cols-3 gap-2">
                   {['building_number', 'street_number', 'zone_number'].map((key) => (
@@ -355,7 +355,7 @@ export default function CheckoutPage({
                       value={newAddr[key]}
                       onChange={(e) => setNewAddr({ ...newAddr, [key]: e.target.value })}
                       placeholder={key.replace('_', ' ')}
-                      className="w-full border border-slate-300 rounded-lg px-2 py-2 text-xs font-medium"
+                      className="w-full border border-[#EADBCE] rounded-lg px-2 py-2 text-xs font-medium bg-[#FAF0DF]"
                     />
                   ))}
                 </div>
@@ -379,7 +379,7 @@ export default function CheckoutPage({
                   <button
                     type="button"
                     onClick={() => setAddingLocation(false)}
-                    className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-semibold"
+                    className="px-3 py-2 rounded-lg border border-[#EADBCE] text-sm font-semibold"
                   >
                     {isAr ? 'إلغاء' : 'Cancel'}
                   </button>
@@ -390,7 +390,7 @@ export default function CheckoutPage({
         </section>
 
         {/* Bottom box — order summary */}
-        <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+        <section className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-sm space-y-4">
           <h2 className="text-xl font-serif font-black">
             {isAr ? 'ملخص الطلب' : 'Order Summary & Checkout'}
           </h2>
@@ -407,7 +407,7 @@ export default function CheckoutPage({
               {lines.map(({ product, qty, lineTotal }) => (
                 <li
                   key={product.id}
-                  className="flex flex-col gap-2 border border-slate-200 rounded-xl p-3"
+                  className="flex flex-col gap-2 border border-[#EADBCE] rounded-xl p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="text-left">
@@ -431,7 +431,7 @@ export default function CheckoutPage({
             </ul>
           )}
 
-          <div className="space-y-2 border-t border-slate-200 pt-3 text-sm font-medium">
+          <div className="space-y-2 border-t border-[#EADBCE] pt-3 text-sm font-medium">
             <div className="flex justify-between">
               <span>{isAr ? 'المجموع الفرعي' : 'Subtotal'}</span>
               <span>{subtotal.toFixed(2)} QAR</span>
@@ -463,12 +463,12 @@ export default function CheckoutPage({
                 value={promoInput}
                 onChange={(e) => setPromoInput(e.target.value)}
                 placeholder="WELCOME10"
-                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium"
+                className="flex-1 border border-[#EADBCE] rounded-lg px-3 py-2 text-sm font-medium bg-[#FAF0DF]"
               />
               <button
                 type="button"
                 onClick={applyPromo}
-                className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:border-[#FF5F1F]"
+                className="px-4 py-2 rounded-lg border border-[#EADBCE] text-sm font-semibold hover:border-[#FF5F1F]"
               >
                 {isAr ? 'تطبيق' : 'Apply'}
               </button>

@@ -69,7 +69,7 @@ export default function DeliveryPortal({ session, lang = 'en' }) {
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-white border border-slate-200 rounded-2xl shadow-md p-5 text-black">
+    <div className="w-full max-w-lg mx-auto bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl shadow-md p-5 text-black">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-[#FF5500]">
@@ -115,7 +115,7 @@ export default function DeliveryPortal({ session, lang = 'en' }) {
           {orders.map((order) => (
             <li
               key={order.id}
-              className="border border-slate-200 rounded-xl p-4 bg-[#fdf0de]/40 space-y-2"
+              className="border border-[#EADBCE] rounded-xl p-4 bg-[#FAF0DF]/40 space-y-2"
             >
               <div>
                 <p className="text-xs font-black uppercase text-black/50">

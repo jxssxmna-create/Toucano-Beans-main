@@ -163,12 +163,12 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
     { id: 'sales', label: isAr ? 'المبيعات' : 'Sales' },
     { id: 'products', label: isAr ? 'المنتجات' : 'Products' },
     { id: 'users', label: isAr ? 'المستخدمون' : 'Users' },
-    { id: 'recipes', label: isAr ? 'الوصفات' : 'Recipes' },
+    { id: 'recipes', label: isAr ? 'الوصفات والمعدات' : 'Recipes & Equipment' },
   ];
 
   return (
     <div className="bg-[#FAF0DF] text-slate-900 min-h-screen font-serif" dir="ltr">
-      <header className="border-b border-slate-300/70 bg-[#FAF0DF]/80 backdrop-blur sticky top-0 z-20">
+      <header className="border-b border-[#EADBCE] bg-[#FAF0DF]/80 backdrop-blur sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Logo size="sm" className="shrink-0" />
@@ -230,7 +230,7 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
               className={`px-4 py-2 rounded-lg text-sm font-black border ${
                 tab === t.id
                   ? 'bg-[#FF5500] text-white border-[#FF5500]'
-                  : 'bg-white border-slate-300 text-slate-800'
+                  : 'bg-[#FAF0DF] border-[#EADBCE] text-slate-800'
               }`}
             >
               {t.label}

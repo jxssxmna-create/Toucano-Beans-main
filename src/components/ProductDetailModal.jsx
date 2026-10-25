@@ -62,11 +62,11 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#fdf0de] sm:rounded-2xl shadow-2xl border border-slate-200">
+      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#FAF0DF] sm:rounded-2xl shadow-2xl border border-[#EADBCE]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-white/90 border border-slate-200 font-black text-black hover:text-[#FF5500]"
+          className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-[#FAF0DF] border border-[#EADBCE] font-black text-black hover:text-[#FF5500]"
           aria-label={isAr ? 'إغلاق' : 'Close'}
         >
           ×
@@ -80,7 +80,7 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
         />
 
         {gallery.length > 1 && (
-          <div className="flex gap-2 px-4 py-3 overflow-x-auto bg-[#fdf0de]">
+          <div className="flex gap-2 px-4 py-3 overflow-x-auto bg-[#FAF0DF]">
             {gallery.map((url, i) => (
               <button
                 key={`${url}-${i}`}
@@ -103,7 +103,7 @@ export default function ProductDetailModal({ product, qty = 0, onQtyChange, onCl
               {weight && (
                 <span
                   dir="ltr"
-                  className="text-xs font-semibold leading-none text-black/70 bg-white border border-black/10 rounded-full px-2.5 py-1"
+                  className="text-xs font-semibold leading-none text-black/70 bg-[#FAF0DF] border border-[#EADBCE] rounded-full px-2.5 py-1"
                 >
                   {weight}
                 </span>

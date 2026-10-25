@@ -40,7 +40,7 @@ export default function EmployeeProfile({ session, profile, lang = 'en', setLang
     }
   }
 
-  const field = 'w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:border-[#FF5F1F]';
+  const field = 'w-full border border-[#EADBCE] rounded-lg px-3 py-2.5 bg-[#FAF0DF] focus:outline-none focus:border-[#FF5F1F]';
   const label = 'block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1';
 
   return (
@@ -68,7 +68,7 @@ export default function EmployeeProfile({ session, profile, lang = 'en', setLang
       </header>
 
       <main className="max-w-md mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <form onSubmit={handleSubmit} className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-6 shadow-sm space-y-4">
           <div>
             <h2 className="text-2xl font-bold">{isAr ? 'ملف الموظف' : 'Employee Profile'}</h2>
             <p className="text-sm text-slate-600 mt-1">
@@ -128,7 +128,7 @@ export default function EmployeeProfile({ session, profile, lang = 'en', setLang
               <button
                 type="button"
                 onClick={() => navigate('/employee/dashboard')}
-                className="px-4 py-2.5 rounded-lg border border-slate-300 font-semibold"
+                className="px-4 py-2.5 rounded-lg border border-[#EADBCE] font-semibold"
               >
                 {isAr ? 'إلغاء' : 'Cancel'}
               </button>

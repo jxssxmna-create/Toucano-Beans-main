@@ -28,7 +28,7 @@ export default function SalesAnalytics({ orders = [], lang = 'en' }) {
   const totalRevenue = records.reduce((s, r) => s + r.revenue, 0);
 
   return (
-    <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-5">
+    <section className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-sm space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-[#FF5500]">
@@ -98,7 +98,7 @@ export default function SalesAnalytics({ orders = [], lang = 'en' }) {
         <h3 className="text-lg font-black mb-2">
           {isAr ? 'سجل المبيعات' : 'Sales Records'}
         </h3>
-        <div className="overflow-x-auto border border-slate-200 rounded-xl">
+        <div className="overflow-x-auto border border-[#EADBCE] rounded-xl">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>

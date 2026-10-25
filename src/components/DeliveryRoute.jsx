@@ -7,7 +7,7 @@ export default function DeliveryRoute({ session, profile, loading, children }) {
 
   if (loading) {
     return (
-      <div className="bg-[#fdf0de] min-h-screen flex items-center justify-center text-black font-bold">
+      <div className="bg-[#FAF0DF] min-h-screen flex items-center justify-center text-black font-bold">
         Loading delivery portal...
       </div>
     );

@@ -82,7 +82,7 @@ export default function LocationPicker({
             value={linkDraft}
             onChange={(e) => setLinkDraft(e.target.value)}
             placeholder="https://maps.google.com/..."
-            className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium"
+            className="flex-1 border border-[#EADBCE] rounded-lg px-3 py-2 bg-[#FAF0DF] text-sm font-medium"
           />
           <button
             type="button"
@@ -97,14 +97,14 @@ export default function LocationPicker({
       <button
         type="button"
         onClick={useMyLocation}
-        className="px-3 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:border-[#FF5F1F]"
+        className="px-3 py-2 rounded-lg border border-[#EADBCE] text-sm font-semibold hover:border-[#FF5F1F]"
       >
         {isAr ? 'موقعي الحالي' : 'Use my location'}
       </button>
 
       {hint && <p className="text-xs font-medium text-red-600">{hint}</p>}
 
-      <div className="rounded-xl overflow-hidden border border-slate-300 bg-slate-100 aspect-[16/10]">
+      <div className="rounded-xl overflow-hidden border border-[#EADBCE] bg-slate-100 aspect-[16/10]">
         <iframe
           title="Google Maps"
           src={embedSrc}

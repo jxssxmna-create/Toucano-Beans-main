@@ -40,7 +40,7 @@ export default function AccountSection({
 
     return (
       <div className="w-full max-w-md mx-auto space-y-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center space-y-3">
+        <div className="bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-4 text-center space-y-3">
           <p className="text-xs font-black uppercase tracking-wider text-[#FF5500]">
             {view === 'admin-dashboard'
               ? isAr
@@ -110,7 +110,7 @@ export default function AccountSection({
 
 function TabBar({ tabs, tab, setTab }) {
   return (
-    <div className="flex rounded-xl overflow-hidden border border-slate-300 bg-white">
+    <div className="flex rounded-xl overflow-hidden border border-[#EADBCE] bg-[#FAF0DF]">
       {tabs.map((item) => (
         <button
           key={item.id}
@@ -119,7 +119,7 @@ function TabBar({ tabs, tab, setTab }) {
           className={`flex-1 py-2.5 text-sm font-black transition ${
             tab === item.id
               ? 'bg-[#FF5500] text-white'
-              : 'text-black hover:bg-[#fdf0de]'
+              : 'text-black hover:bg-[#FAF0DF]'
           }`}
         >
           {item.label}

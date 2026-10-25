@@ -45,7 +45,7 @@ export default function BilingualField({
   }
 
   const Input = multiline ? 'textarea' : 'input';
-  const base = `w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-[#FF5F1F] ${
+  const base = `w-full border border-[#EADBCE] rounded-lg px-3 py-2 bg-[#FAF0DF] focus:outline-none focus:border-[#FF5F1F] ${
     multiline ? 'min-h-[110px]' : ''
   }`;
   const btn =
