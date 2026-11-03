@@ -34,7 +34,8 @@ const translations = {
     contactTitle: 'Contact Us',
     officialEmail: 'Official Email',
     logout: 'Log Out',
-    noProducts: 'No products available yet.',
+    comingSoon: 'Coming Soon',
+    comingSoonHint: 'New selections are on the way.',
     loadingProducts: 'Loading products...',
   },
   ar: {
@@ -55,7 +56,8 @@ const translations = {
     contactTitle: 'اتصل بنا',
     officialEmail: 'البريد الإلكتروني الرسمي',
     logout: 'تسجيل الخروج',
-    noProducts: 'لا توجد منتجات حالياً.',
+    comingSoon: 'قريباً',
+    comingSoonHint: 'اختيارات جديدة في الطريق.',
     loadingProducts: 'جاري تحميل المنتجات...',
   },
 };
@@ -475,7 +477,15 @@ export default function Storefront({
             {productsLoading ? (
               <p className="text-center text-black font-medium">{t.loadingProducts}</p>
             ) : categoryProducts.length === 0 ? (
-              <p className="text-center text-black/70 font-medium">{t.noProducts}</p>
+              <div
+                dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                className="mx-auto max-w-md rounded-2xl border border-[#EADBCE] bg-[#FAF0DF] shadow-sm px-8 py-14 text-center"
+              >
+                <p className="font-serif text-3xl md:text-4xl font-bold tracking-wide text-black">
+                  {t.comingSoon}
+                </p>
+                <p className="mt-3 font-serif text-base text-black/55">{t.comingSoonHint}</p>
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
                 {categoryProducts.map((product) => (
