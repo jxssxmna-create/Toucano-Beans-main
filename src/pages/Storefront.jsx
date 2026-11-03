@@ -8,10 +8,21 @@ import CartDrawer from '../components/CartDrawer';
 import HeaderControls from '../components/HeaderControls';
 import Logo from '../components/Logo';
 import { fetchProducts } from '../lib/productsApi';
-import { resolveCategoryProducts } from '../lib/productCatalog';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 import { useCart } from '../context/CartContext';
 import { BRAND_AR, textDir } from '../lib/i18n';
+
+function normalizeProduct(p) {
+  const image_urls = [
+    ...(Array.isArray(p.image_urls) ? p.image_urls : []),
+    p.image_url,
+  ].filter(Boolean);
+  return {
+    ...p,
+    image_urls: [...new Set(image_urls)],
+    image_url: image_urls[0] || p.image_url || null,
+  };
+}
 
 const PREVIEW_KEY = 'tb_buyer_preview';
 
@@ -176,15 +187,15 @@ export default function Storefront({
     async function load() {
       setProductsLoading(true);
       try {
-        let remote = [];
-        if (isSupabaseConfigured) {
-          try {
-            remote = await fetchProducts(activePage);
-          } catch (err) {
-            console.error('Failed to load products:', err.message);
-          }
+        if (!isSupabaseConfigured) {
+          if (!cancelled) setCategoryProducts([]);
+          return;
         }
-        if (!cancelled) setCategoryProducts(resolveCategoryProducts(activePage, remote));
+        const remote = await fetchProducts(activePage);
+        if (!cancelled) setCategoryProducts((remote || []).map(normalizeProduct));
+      } catch (err) {
+        console.error('Failed to load products:', err.message);
+        if (!cancelled) setCategoryProducts([]);
       } finally {
         if (!cancelled) setProductsLoading(false);
       }
