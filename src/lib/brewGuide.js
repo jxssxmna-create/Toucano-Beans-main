@@ -23,7 +23,8 @@ export const COPY = {
     decrease: 'Decrease',
     increase: 'Increase',
     loading: 'Loading recipes…',
-    empty: 'No brew guides yet. Add equipment and recipes in the admin panel.',
+    recommended: 'Recommended beans for this grinder',
+    empty: 'No brew guides yet. Add grinders and recipes in the admin panel.',
   },
   ar: {
     title: 'وصفات القهوة',
@@ -49,7 +50,8 @@ export const COPY = {
     decrease: 'إنقاص',
     increase: 'زيادة',
     loading: 'جاري تحميل الوصفات…',
-    empty: 'لا توجد أدلة تحضير بعد. أضف المعدات والوصفات من لوحة التحكم.',
+    recommended: 'حبوب موصى بها لهذه المطحنة',
+    empty: 'لا توجد أدلة تحضير بعد. أضف المطاحن والوصفات من لوحة التحكم.',
   },
 };
 

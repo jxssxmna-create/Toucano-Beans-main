@@ -163,7 +163,7 @@ export default function AdminDashboard({ lang, setLang, onSignOut, session }) {
     { id: 'sales', label: isAr ? 'المبيعات' : 'Sales' },
     { id: 'products', label: isAr ? 'المنتجات' : 'Products' },
     { id: 'users', label: isAr ? 'المستخدمون' : 'Users' },
-    { id: 'recipes', label: isAr ? 'الوصفات والمعدات' : 'Recipes & Equipment' },
+    { id: 'recipes', label: isAr ? 'الوصفات والمطاحن' : 'Recipes & Grinders' },
   ];
 
   return (

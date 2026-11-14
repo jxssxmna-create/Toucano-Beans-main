@@ -1,25 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   deleteBrewRecipe,
-  deleteEquipment,
+  deleteGrinder,
   deleteRecipeMethod,
   fetchBrewRecipes,
-  fetchEquipment,
+  fetchGrinderProductIds,
+  fetchGrinders,
   fetchRecipeMethods,
   slugify,
   upsertBrewRecipe,
-  upsertEquipment,
+  upsertGrinder,
   upsertRecipeMethod,
 } from '../../lib/brewApi';
+import { fetchProducts } from '../../lib/productsApi';
+import { productName } from '../../lib/i18n';
 import BilingualField from './BilingualField';
 
 const CARD = 'bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl p-5 shadow-sm space-y-4';
 const FIELD = 'w-full border border-[#EADBCE] rounded-lg px-3 py-2 bg-[#FAF0DF] focus:outline-none focus:border-[#FF5F1F]';
-const EMPTY_EQ = { id: null, name: '', name_ar: '', slug: '', sort_order: 0, is_active: true };
+const EMPTY_GRINDER = { id: null, name: '', name_ar: '', slug: '', sort_order: 0, is_active: true, product_ids: [] };
 const EMPTY_METHOD = { id: null, name: '', name_ar: '', slug: '', show_calculator: false, sort_order: 0, is_active: true };
 const EMPTY_RECIPE = {
   id: null,
-  equipment_id: '',
+  grinder_id: '',
   method_id: '',
   default_ratio: 15,
   default_dose_g: 15,
@@ -40,11 +43,12 @@ const EMPTY_RECIPE = {
 
 export default function RecipeManager({ lang = 'en', userId }) {
   const isAr = lang === 'ar';
-  const [tab, setTab] = useState('equipment');
-  const [equipment, setEquipment] = useState([]);
+  const [tab, setTab] = useState('grinders');
+  const [grinders, setGrinders] = useState([]);
   const [methods, setMethods] = useState([]);
   const [recipes, setRecipes] = useState([]);
-  const [eqForm, setEqForm] = useState(null);
+  const [coffeeProducts, setCoffeeProducts] = useState([]);
+  const [grinderForm, setGrinderForm] = useState(null);
   const [methodForm, setMethodForm] = useState(null);
   const [recipeForm, setRecipeForm] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -52,10 +56,16 @@ export default function RecipeManager({ lang = 'en', userId }) {
 
   async function load() {
     try {
-      const [eq, m, r] = await Promise.all([fetchEquipment(), fetchRecipeMethods(), fetchBrewRecipes()]);
-      setEquipment(eq);
+      const [g, m, r, beans] = await Promise.all([
+        fetchGrinders(),
+        fetchRecipeMethods(),
+        fetchBrewRecipes(),
+        fetchProducts('coffee-beans').catch(() => []),
+      ]);
+      setGrinders(g);
       setMethods(m);
       setRecipes(r);
+      setCoffeeProducts(beans || []);
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
     }
@@ -65,18 +75,40 @@ export default function RecipeManager({ lang = 'en', userId }) {
     load();
   }, []);
 
-  const eqById = useMemo(() => Object.fromEntries(equipment.map((e) => [e.id, e])), [equipment]);
+  const grinderById = useMemo(() => Object.fromEntries(grinders.map((g) => [g.id, g])), [grinders]);
   const methodById = useMemo(() => Object.fromEntries(methods.map((m) => [m.id, m])), [methods]);
 
-  async function saveEq(e) {
+  async function openGrinderForm(existing = null) {
+    if (existing) {
+      const product_ids = await fetchGrinderProductIds(existing.id).catch(() => []);
+      setGrinderForm({ ...existing, product_ids });
+      return;
+    }
+    setGrinderForm({ ...EMPTY_GRINDER, sort_order: grinders.length + 1, product_ids: [] });
+  }
+
+  function toggleProduct(id) {
+    setGrinderForm((f) => {
+      const set = new Set(f.product_ids || []);
+      if (set.has(id)) set.delete(id);
+      else set.add(id);
+      return { ...f, product_ids: [...set] };
+    });
+  }
+
+  async function saveGrinder(e) {
     e.preventDefault();
-    if (!eqForm.name.trim()) return;
+    if (!grinderForm.name.trim()) return;
     setBusy(true);
     setMessage(null);
     try {
-      await upsertEquipment({ ...eqForm, slug: eqForm.slug || slugify(eqForm.name) });
-      setEqForm(null);
-      setMessage({ type: 'success', text: isAr ? 'تم حفظ المطحنة' : 'Equipment saved' });
+      await upsertGrinder({
+        ...grinderForm,
+        slug: grinderForm.slug || slugify(grinderForm.name),
+        product_ids: grinderForm.product_ids || [],
+      });
+      setGrinderForm(null);
+      setMessage({ type: 'success', text: isAr ? 'تم حفظ المطحنة' : 'Grinder saved' });
       await load();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -104,8 +136,8 @@ export default function RecipeManager({ lang = 'en', userId }) {
 
   async function saveRecipe(e) {
     e.preventDefault();
-    if (!recipeForm.equipment_id || !recipeForm.method_id) {
-      setMessage({ type: 'error', text: isAr ? 'اختر المطحنة والطريقة' : 'Pick equipment and a method' });
+    if (!recipeForm.grinder_id || !recipeForm.method_id) {
+      setMessage({ type: 'error', text: isAr ? 'اختر المطحنة والطريقة' : 'Pick a grinder and a method' });
       return;
     }
     setBusy(true);
@@ -114,7 +146,7 @@ export default function RecipeManager({ lang = 'en', userId }) {
       await upsertBrewRecipe(
         {
           ...recipeForm,
-          equipment_name: eqById[recipeForm.equipment_id]?.name,
+          grinder_name: grinderById[recipeForm.grinder_id]?.name,
           method_name: methodById[recipeForm.method_id]?.name,
         },
         { userId }
@@ -130,7 +162,7 @@ export default function RecipeManager({ lang = 'en', userId }) {
   }
 
   const tabs = [
-    { id: 'equipment', label: isAr ? 'المطاحن' : 'Equipment' },
+    { id: 'grinders', label: isAr ? 'المطاحن' : 'Grinders' },
     { id: 'methods', label: isAr ? 'الطرق' : 'Methods' },
     { id: 'recipes', label: isAr ? 'الوصفات' : 'Brew recipes' },
   ];
@@ -141,7 +173,7 @@ export default function RecipeManager({ lang = 'en', userId }) {
         <p className="text-xs font-semibold uppercase tracking-wider text-[#FF5F1F]">
           {isAr ? 'التحضير' : 'Brew guide'}
         </p>
-        <h2 className="text-2xl font-bold">{isAr ? 'المعدات والوصفات' : 'Equipment & Recipes'}</h2>
+        <h2 className="text-2xl font-bold">{isAr ? 'المطاحن والوصفات' : 'Grinders & Recipes'}</h2>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -171,31 +203,65 @@ export default function RecipeManager({ lang = 'en', userId }) {
         </div>
       )}
 
-      {tab === 'equipment' && (
+      {tab === 'grinders' && (
         <Panel
-          isAr={isAr}
           addLabel={isAr ? 'إضافة مطحنة' : 'Add grinder'}
-          open={!!eqForm}
-          onToggle={() => setEqForm(eqForm ? null : { ...EMPTY_EQ, sort_order: equipment.length + 1 })}
+          open={!!grinderForm}
+          onToggle={() => (grinderForm ? setGrinderForm(null) : openGrinderForm())}
         >
-          {eqForm && (
-            <form onSubmit={saveEq} className="space-y-3 border border-[#EADBCE] rounded-xl p-4">
+          {grinderForm && (
+            <form onSubmit={saveGrinder} className="space-y-3 border border-[#EADBCE] rounded-xl p-4">
               <BilingualField
                 label={isAr ? 'اسم المطحنة' : 'Grinder name'}
-                valueEn={eqForm.name}
-                valueAr={eqForm.name_ar}
-                onChangeEn={(v) => setEqForm((f) => ({ ...f, name: v }))}
-                onChangeAr={(v) => setEqForm((f) => ({ ...f, name_ar: v }))}
+                valueEn={grinderForm.name}
+                valueAr={grinderForm.name_ar}
+                onChangeEn={(v) => setGrinderForm((f) => ({ ...f, name: v }))}
+                onChangeAr={(v) => setGrinderForm((f) => ({ ...f, name_ar: v }))}
                 required
                 disabled={busy}
                 context="coffee grinder name"
                 uiLang={lang}
               />
+
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase text-slate-500">
+                  {isAr ? 'حبوب القهوة الموصى بها' : 'Recommended coffee beans'}
+                </p>
+                {coffeeProducts.length === 0 ? (
+                  <p className="text-sm text-black/50 font-medium">
+                    {isAr ? 'لا توجد حبوب قهوة في المتجر بعد.' : 'No coffee bean products in the store yet.'}
+                  </p>
+                ) : (
+                  <div className="max-h-52 overflow-y-auto space-y-1.5 rounded-xl border border-[#EADBCE] p-3">
+                    {coffeeProducts.map((p) => {
+                      const checked = (grinderForm.product_ids || []).includes(p.id);
+                      return (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-[#EADBCE]/40 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={busy}
+                            onChange={() => toggleProduct(p.id)}
+                          />
+                          <span className="text-sm font-semibold min-w-0 truncate">
+                            {productName(p, lang) || p.name}
+                            {p.weight ? <span className="ms-2 text-xs font-medium text-black/45">{p.weight}</span> : null}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               <label className="flex items-center gap-2 text-sm font-semibold">
                 <input
                   type="checkbox"
-                  checked={eqForm.is_active}
-                  onChange={(e) => setEqForm((f) => ({ ...f, is_active: e.target.checked }))}
+                  checked={grinderForm.is_active}
+                  onChange={(e) => setGrinderForm((f) => ({ ...f, is_active: e.target.checked }))}
                 />
                 {isAr ? 'ظاهر في الموقع' : 'Visible on storefront'}
               </label>
@@ -205,14 +271,14 @@ export default function RecipeManager({ lang = 'en', userId }) {
             </form>
           )}
           <RowList
-            items={equipment}
+            items={grinders}
             isAr={isAr}
-            title={(e) => e.name}
-            subtitle={(e) => e.name_ar}
-            onEdit={(e) => setEqForm({ ...e })}
+            title={(g) => g.name}
+            subtitle={(g) => g.name_ar}
+            onEdit={(g) => openGrinderForm(g)}
             onDelete={async (id) => {
               if (!window.confirm(isAr ? 'حذف المطحنة ووصفاتها؟' : 'Delete this grinder and its recipes?')) return;
-              await deleteEquipment(id);
+              await deleteGrinder(id);
               await load();
             }}
           />
@@ -221,7 +287,6 @@ export default function RecipeManager({ lang = 'en', userId }) {
 
       {tab === 'methods' && (
         <Panel
-          isAr={isAr}
           addLabel={isAr ? 'إضافة طريقة' : 'Add method'}
           open={!!methodForm}
           onToggle={() => setMethodForm(methodForm ? null : { ...EMPTY_METHOD, sort_order: methods.length + 1 })}
@@ -277,14 +342,13 @@ export default function RecipeManager({ lang = 'en', userId }) {
 
       {tab === 'recipes' && (
         <Panel
-          isAr={isAr}
           addLabel={isAr ? 'إضافة وصفة' : 'Add brew recipe'}
           open={!!recipeForm}
           onToggle={() =>
             setRecipeForm(
               recipeForm
                 ? null
-                : { ...EMPTY_RECIPE, equipment_id: equipment[0]?.id || '', method_id: methods[0]?.id || '' }
+                : { ...EMPTY_RECIPE, grinder_id: grinders[0]?.id || '', method_id: methods[0]?.id || '' }
             )
           }
         >
@@ -292,14 +356,14 @@ export default function RecipeManager({ lang = 'en', userId }) {
             <form onSubmit={saveRecipe} className="space-y-3 border border-[#EADBCE] rounded-xl p-4">
               <div className="grid sm:grid-cols-2 gap-3">
                 <label className="block space-y-1 text-sm font-semibold">
-                  <span>{isAr ? 'المطحنة' : 'Equipment'}</span>
+                  <span>{isAr ? 'المطحنة' : 'Grinder'}</span>
                   <select
                     className={FIELD}
-                    value={recipeForm.equipment_id}
-                    onChange={(e) => setRecipeForm((f) => ({ ...f, equipment_id: e.target.value }))}
+                    value={recipeForm.grinder_id}
+                    onChange={(e) => setRecipeForm((f) => ({ ...f, grinder_id: e.target.value }))}
                   >
-                    {equipment.map((eq) => (
-                      <option key={eq.id} value={eq.id}>{eq.name}</option>
+                    {grinders.map((g) => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
                     ))}
                   </select>
                 </label>
@@ -375,7 +439,7 @@ export default function RecipeManager({ lang = 'en', userId }) {
           <RowList
             items={recipes}
             isAr={isAr}
-            title={(r) => `${eqById[r.equipment_id]?.name || '?'} · ${methodById[r.method_id]?.name || '?'}`}
+            title={(r) => `${grinderById[r.grinder_id]?.name || '?'} · ${methodById[r.method_id]?.name || '?'}`}
             subtitle={(r) => `1:${r.default_ratio} · ${r.default_dose_g}g`}
             onEdit={(r) =>
               setRecipeForm({
@@ -446,7 +510,7 @@ function Num({ label, value, onChange, step = '1' }) {
         type="number"
         step={step}
         value={value}
-        onChange={(e) => onChange(step === '1' ? Number(e.target.value) : Number(e.target.value))}
+        onChange={(e) => onChange(Number(e.target.value))}
         className={FIELD}
       />
     </label>

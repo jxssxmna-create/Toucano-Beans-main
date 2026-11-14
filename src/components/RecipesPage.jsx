@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchPublicBrewCatalog } from '../lib/brewApi';
-import { BRAND_AR, BRAND_EN, enforceBrand } from '../lib/i18n';
+import { BRAND_AR, BRAND_EN, enforceBrand, productName } from '../lib/i18n';
+import { LOGO_SRC, handleLogoError } from '../lib/logo';
 import { COPY, calcBrew, interpolateSteps, localizedName, pourStages } from '../lib/brewGuide';
 
 const BOX = 'bg-[#FAF0DF] border border-[#EADBCE] rounded-2xl shadow-sm p-5 sm:p-6 space-y-4';
@@ -40,9 +41,9 @@ export default function RecipesPage({ lang = 'en' }) {
   const t = COPY[isAr ? 'ar' : 'en'];
   const align = isAr ? 'text-right' : 'text-left';
 
-  const [catalog, setCatalog] = useState({ equipment: [], methods: [], recipes: [] });
+  const [catalog, setCatalog] = useState({ grinders: [], methods: [], recipes: [], productsByGrinder: {} });
   const [loading, setLoading] = useState(true);
-  const [equipmentId, setEquipmentId] = useState('');
+  const [grinderId, setGrinderId] = useState('');
   const [methodId, setMethodId] = useState('');
   const [temp, setTemp] = useState('hot');
   const [ratio, setRatio] = useState(15);
@@ -54,9 +55,9 @@ export default function RecipesPage({ lang = 'en' }) {
       .then((data) => {
         if (cancelled) return;
         setCatalog(data);
-        const firstEq = data.equipment[0]?.id || '';
-        const firstRecipe = data.recipes.find((r) => r.equipment_id === firstEq);
-        setEquipmentId(firstEq);
+        const first = data.grinders[0]?.id || '';
+        const firstRecipe = data.recipes.find((r) => r.grinder_id === first);
+        setGrinderId(first);
         setMethodId(firstRecipe?.method_id || '');
         if (firstRecipe) {
           setRatio(firstRecipe.default_ratio);
@@ -64,7 +65,7 @@ export default function RecipesPage({ lang = 'en' }) {
         }
       })
       .catch(() => {
-        if (!cancelled) setCatalog({ equipment: [], methods: [], recipes: [] });
+        if (!cancelled) setCatalog({ grinders: [], methods: [], recipes: [], productsByGrinder: {} });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -74,13 +75,14 @@ export default function RecipesPage({ lang = 'en' }) {
     };
   }, []);
 
-  const methodsForEq = useMemo(() => {
-    const ids = new Set(catalog.recipes.filter((r) => r.equipment_id === equipmentId).map((r) => r.method_id));
+  const methodsForGrinder = useMemo(() => {
+    const ids = new Set(catalog.recipes.filter((r) => r.grinder_id === grinderId).map((r) => r.method_id));
     return catalog.methods.filter((m) => ids.has(m.id));
-  }, [catalog, equipmentId]);
+  }, [catalog, grinderId]);
 
-  const recipe = catalog.recipes.find((r) => r.equipment_id === equipmentId && r.method_id === methodId);
+  const recipe = catalog.recipes.find((r) => r.grinder_id === grinderId && r.method_id === methodId);
   const method = catalog.methods.find((m) => m.id === methodId);
+  const recommended = catalog.productsByGrinder?.[grinderId] || [];
   const showCalc = Boolean(method?.show_calculator && recipe);
   const iced = temp === 'iced';
 
@@ -106,9 +108,9 @@ export default function RecipesPage({ lang = 'en' }) {
   const grind = enforceBrand((isAr ? recipe?.grind_ar : recipe?.grind_en) || recipe?.grind_en || '', lang);
   const stages = showCalc ? pourStages({ temp, brew, lang }) : [];
 
-  function changeEquipment(id) {
-    setEquipmentId(id);
-    const next = catalog.recipes.find((r) => r.equipment_id === id);
+  function changeGrinder(id) {
+    setGrinderId(id);
+    const next = catalog.recipes.find((r) => r.grinder_id === id);
     setMethodId(next?.method_id || '');
     if (next) {
       setRatio(next.default_ratio);
@@ -118,7 +120,7 @@ export default function RecipesPage({ lang = 'en' }) {
 
   function changeMethod(id) {
     setMethodId(id);
-    const next = catalog.recipes.find((r) => r.equipment_id === equipmentId && r.method_id === id);
+    const next = catalog.recipes.find((r) => r.grinder_id === grinderId && r.method_id === id);
     if (next) {
       setRatio(next.default_ratio);
       setDose(next.default_dose_g);
@@ -132,7 +134,7 @@ export default function RecipesPage({ lang = 'en' }) {
 
       {loading ? (
         <p className="text-center font-semibold">{t.loading}</p>
-      ) : !catalog.equipment.length || !catalog.recipes.length ? (
+      ) : !catalog.grinders.length || !catalog.recipes.length ? (
         <p className="text-center font-semibold text-black/60">{t.empty}</p>
       ) : (
         <>
@@ -140,16 +142,16 @@ export default function RecipesPage({ lang = 'en' }) {
             <p className="text-xs font-semibold uppercase tracking-wider text-[#FF5F1F]">{t.step1}</p>
             <label className="block space-y-1.5">
               <span className="text-sm font-semibold text-black/70">{t.grinder}</span>
-              <select value={equipmentId} onChange={(e) => changeEquipment(e.target.value)} className={`${FIELD} ${align}`}>
-                {catalog.equipment.map((eq) => (
-                  <option key={eq.id} value={eq.id}>{localizedName(eq, lang)}</option>
+              <select value={grinderId} onChange={(e) => changeGrinder(e.target.value)} className={`${FIELD} ${align}`}>
+                {catalog.grinders.map((g) => (
+                  <option key={g.id} value={g.id}>{localizedName(g, lang)}</option>
                 ))}
               </select>
             </label>
             <label className="block space-y-1.5">
               <span className="text-sm font-semibold text-black/70">{t.method}</span>
               <select value={methodId} onChange={(e) => changeMethod(e.target.value)} className={`${FIELD} ${align}`}>
-                {methodsForEq.map((m) => (
+                {methodsForGrinder.map((m) => (
                   <option key={m.id} value={m.id}>{localizedName(m, lang)}</option>
                 ))}
               </select>
@@ -230,6 +232,32 @@ export default function RecipesPage({ lang = 'en' }) {
                 <div>
                   <p className="text-sm font-semibold text-black/70 mb-1">{t.grindLabel}</p>
                   <p className="font-medium leading-relaxed">{grind}</p>
+                </div>
+              )}
+              {recommended.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-black/70">{t.recommended}</p>
+                  <ul className="space-y-2">
+                    {recommended.map((p) => (
+                      <li
+                        key={p.id}
+                        className="flex items-center gap-3 rounded-xl border border-[#EADBCE] px-3 py-2"
+                      >
+                        <img
+                          src={p.image_url || LOGO_SRC}
+                          alt=""
+                          onError={handleLogoError}
+                          className="w-10 h-10 rounded-lg object-cover bg-[#EADBCE]/40 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-semibold truncate">{productName(p, lang) || p.name}</p>
+                          {p.weight && (
+                            <p dir="ltr" className="text-xs text-black/45">{p.weight}</p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
               <ol className="space-y-3">

@@ -13,16 +13,41 @@ export function slugify(text) {
     .slice(0, 48) || `item-${Date.now()}`;
 }
 
-export async function fetchEquipment({ activeOnly = false } = {}) {
+export async function fetchGrinders({ activeOnly = false } = {}) {
   assertConfigured();
-  let q = supabase.from('equipment').select('*').order('sort_order').order('name');
+  let q = supabase.from('grinders').select('*').order('sort_order').order('name');
   if (activeOnly) q = q.eq('is_active', true);
   const { data, error } = await q;
   if (error) throw error;
   return data || [];
 }
 
-export async function upsertEquipment(row) {
+export async function fetchGrinderProductIds(grinderId) {
+  assertConfigured();
+  if (!grinderId) return [];
+  const { data, error } = await supabase
+    .from('grinder_products')
+    .select('product_id')
+    .eq('grinder_id', grinderId);
+  if (error) throw error;
+  return (data || []).map((r) => r.product_id);
+}
+
+export async function setGrinderProducts(grinderId, productIds = []) {
+  assertConfigured();
+  const { error: delErr } = await supabase.from('grinder_products').delete().eq('grinder_id', grinderId);
+  if (delErr) throw delErr;
+  const rows = [...new Set(productIds.filter(Boolean))].map((product_id) => ({
+    grinder_id: grinderId,
+    product_id,
+  }));
+  if (!rows.length) return [];
+  const { data, error } = await supabase.from('grinder_products').insert(rows).select('product_id');
+  if (error) throw error;
+  return (data || []).map((r) => r.product_id);
+}
+
+export async function upsertGrinder(row) {
   assertConfigured();
   const payload = {
     name: row.name.trim(),
@@ -32,16 +57,20 @@ export async function upsertEquipment(row) {
     is_active: row.is_active !== false,
   };
   const query = row.id
-    ? supabase.from('equipment').update(payload).eq('id', row.id)
-    : supabase.from('equipment').insert(payload);
+    ? supabase.from('grinders').update(payload).eq('id', row.id)
+    : supabase.from('grinders').insert(payload);
   const { data, error } = await query.select('*').single();
   if (error) throw error;
-  return data;
+
+  if (Array.isArray(row.product_ids)) {
+    await setGrinderProducts(data.id, row.product_ids);
+  }
+  return { ...data, product_ids: Array.isArray(row.product_ids) ? row.product_ids : undefined };
 }
 
-export async function deleteEquipment(id) {
+export async function deleteGrinder(id) {
   assertConfigured();
-  const { error } = await supabase.from('equipment').delete().eq('id', id);
+  const { error } = await supabase.from('grinders').delete().eq('id', id);
   if (error) throw error;
 }
 
@@ -83,7 +112,7 @@ export async function fetchBrewRecipes({ activeOnly = false } = {}) {
   let q = supabase
     .from('recipes')
     .select('*')
-    .not('equipment_id', 'is', null)
+    .not('grinder_id', 'is', null)
     .not('method_id', 'is', null)
     .order('display_order');
   if (activeOnly) q = q.eq('is_active', true);
@@ -94,12 +123,12 @@ export async function fetchBrewRecipes({ activeOnly = false } = {}) {
 
 export async function upsertBrewRecipe(row, { userId } = {}) {
   assertConfigured();
-  const eqName = row.equipment_name || 'Recipe';
+  const grinderName = row.grinder_name || 'Recipe';
   const methodName = row.method_name || '';
   const payload = {
-    title: `${eqName} · ${methodName}`.trim(),
+    title: `${grinderName} · ${methodName}`.trim(),
     body: row.body || '',
-    equipment_id: row.equipment_id,
+    grinder_id: row.grinder_id,
     method_id: row.method_id,
     default_ratio: Number(row.default_ratio) || 15,
     default_dose_g: Number(row.default_dose_g) || 15,
@@ -133,11 +162,30 @@ export async function deleteBrewRecipe(id) {
 }
 
 export async function fetchPublicBrewCatalog() {
-  if (!isSupabaseConfigured) return { equipment: [], methods: [], recipes: [] };
-  const [equipment, methods, recipes] = await Promise.all([
-    fetchEquipment({ activeOnly: true }),
+  if (!isSupabaseConfigured) {
+    return { grinders: [], methods: [], recipes: [], productsByGrinder: {} };
+  }
+  const [grinders, methods, recipes] = await Promise.all([
+    fetchGrinders({ activeOnly: true }),
     fetchRecipeMethods({ activeOnly: true }),
     fetchBrewRecipes({ activeOnly: true }),
   ]);
-  return { equipment, methods, recipes };
+
+  const productsByGrinder = {};
+  if (grinders.length) {
+    const { data: links, error } = await supabase
+      .from('grinder_products')
+      .select('grinder_id, product_id, products(id, name, name_ar, image_url, category, price, weight)')
+      .in(
+        'grinder_id',
+        grinders.map((g) => g.id)
+      );
+    if (error) throw error;
+    for (const row of links || []) {
+      if (!productsByGrinder[row.grinder_id]) productsByGrinder[row.grinder_id] = [];
+      if (row.products) productsByGrinder[row.grinder_id].push(row.products);
+    }
+  }
+
+  return { grinders, methods, recipes, productsByGrinder };
 }
